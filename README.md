@@ -6,11 +6,16 @@ React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui, pripremljen za rad s
 
 Za tim: na GitHubu kliknite **Use this template** i napravite svoj repozitorijum, pa ga klonirajte.
 
+Kurs koristi [pnpm](https://pnpm.io). Instalirajte ga jednom, pa pokrenite projekat:
+
 ```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run lint       # oxlint + provjera granica između feature-a
+npm install -g pnpm   # jednom po računaru
+pnpm install
+pnpm dev              # http://localhost:5173
+pnpm lint             # oxlint + provjera granica između feature-a
 ```
+
+Radi i sa npm-om (`npm install`, `npm run dev`), ali na kursu koristimo pnpm i u repozitorijumu je samo `pnpm-lock.yaml`.
 
 Otvorite folder u VS Code-u i pokrenite Claude Code ekstenziju.
 
@@ -24,7 +29,7 @@ src/
   lib/            utils.ts i mock-db.ts
 ```
 
-Feature-i ne uvoze jedan drugog, a ruta ih spaja. `npm run lint` provjerava i te granice
+Feature-i ne uvoze jedan drugog, a ruta ih spaja. `pnpm lint` provjerava i te granice
 (`scripts/check-boundaries.mjs`) i javlja tačan fajl i import koji ih krši.
 
 ## Prvi koraci sa Claude-om
@@ -47,5 +52,7 @@ Feature-i ne uvoze jedan drugog, a ruta ih spaja. `npm run lint` provjerava i te
 | `.claude/agents/ui-recenzent.md` | Subagent koji pregleda UI i ništa ne mijenja |
 | `.claude/settings.json` | Dozvole, Explanatory stil odgovora i hook koji formatira svaki izmijenjen fajl |
 | `.mcp.json` | Playwright (browser), shadcn (katalog komponenti) i Context7 (aktuelna dokumentacija biblioteka) |
+
+MCP serveri u `.mcp.json` se pokreću sa `npx`, jer `npx` dolazi uz Node i radi bez obzira na to koji package manager koristite.
 
 Preporučeno: `/plugin install frontend-design@claude-plugins-official`

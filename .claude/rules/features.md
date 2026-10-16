@@ -11,4 +11,4 @@ paths:
 - Smije da uvozi iz `src/components`, `src/lib` i iz sopstvenog foldera (relativno, npr. `../api/use-oglasi`)
 - Ako dva feature-a trebaju isti kod, premjesti ga u `src/lib` ili `src/components`, a feature-e spoji u ruti u `src/app/routes`
 - Bez barrel `index.ts` fajlova: uvozi se direktno fajl koji treba
-- `npm run lint` provjerava granice
+- `pnpm lint` provjerava granice

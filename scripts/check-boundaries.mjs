@@ -1,5 +1,5 @@
 // Provjera granica između slojeva: shared (components, lib, hooks) -> features -> app.
-// Pokreće se kao dio `npm run lint`. Bez zavisnosti, samo Node.
+// Pokreće se kao dio `pnpm lint`. Bez zavisnosti, samo Node.
 //
 // Pravila:
 // 1. Feature ne uvozi drugi feature (src/features/X ne uvozi iz src/features/Y).

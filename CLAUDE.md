@@ -6,10 +6,11 @@ React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui + React Router + TanS
 Dizajn je opisan u @DESIGN.md, entiteti u @docs/entiteti.md.
 
 ## Komande
-- `npm run dev`: dev server na http://localhost:5173
-- `npm run typecheck`: TypeScript provjera
-- `npm run lint`: oxlint i provjera granica između feature-a
-- `npm run build`: produkcijski build
+- `pnpm dev`: dev server na http://localhost:5173
+- `pnpm typecheck`: TypeScript provjera
+- `pnpm lint`: oxlint i provjera granica između feature-a
+- `pnpm build`: produkcijski build
+- `pnpm format`: Prettier formatira `src/`
 
 ## Feature-first
 Svaka funkcionalnost (oglasi, korisnici, poruke…) živi u `src/features/<ime>/` i ima samo
@@ -25,7 +26,7 @@ Smjer zavisnosti: zajednički kod -> features -> app, nikad obrnuto.
 - `src/features/<ime>/api/<ime>-api.ts`: jedino mjesto koje dohvata podatke (trenutno mock)
 - `src/features/<ime>/api/use-<ime>.ts`: TanStack Query hookovi oko API-ja
 - `src/features/<ime>/components/`: komponente tog feature-a (npr. `oglas-kartica.tsx`)
-- `src/components/ui/`: shadcn/ui komponente, dodaju se sa `npx shadcn@latest add <ime>`
+- `src/components/ui/`: shadcn/ui komponente, dodaju se sa `pnpm dlx shadcn@latest add <ime>`
 - `src/components/layout/`: layout aplikacije (zaglavlje, navigacija)
 - `src/lib/`: `utils.ts` (`cn`) i `mock-db.ts` (mock baza i kašnjenje)
 
@@ -41,6 +42,6 @@ Smjer zavisnosti: zajednički kod -> features -> app, nikad obrnuto.
 - Ako nisi siguran kako radi API neke biblioteke (Tailwind v4, React Router 8, TanStack Query 5), provjeri dokumentaciju preko Context7, ne pogađaj.
 
 ## Gotovo je kad
-- `npm run typecheck` i `npm run lint` prolaze
+- `pnpm typecheck` i `pnpm lint` prolaze
 - Stranica je otvorena preko Playwright MCP-a i screenshot na 375 px i 1440 px izgleda kao DESIGN.md
 - Nema grešaka u browser konzoli

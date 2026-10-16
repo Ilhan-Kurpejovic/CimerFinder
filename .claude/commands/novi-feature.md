@@ -15,4 +15,4 @@ Format je `<ime>: <opis>`, npr. `korisnici: prodavci koji objavljuju oglase`. Im
 6. Komponente (ako trebaju) u `src/features/<ime>/components/`, sa loading, empty i error stanjem
 7. Dopuni docs/entiteti.md: tabela polja, veze, pravila pristupa i API koji frontend očekuje
 8. Ne diraj druge feature-e i ne uvozi iz njih; ako nešto treba da se dijeli, pitaj me prije nego što ga premjestiš u `src/lib`
-9. Pokreni `npm run typecheck` i `npm run lint`
+9. Pokreni `pnpm typecheck` i `pnpm lint`

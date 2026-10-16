@@ -3,11 +3,11 @@
   "outputStyle": "Explanatory",
   "permissions": {
     "allow": [
-      "Bash(npm run typecheck)",
-      "Bash(npm run lint)",
-      "Bash(npm run build)",
-      "Bash(npm run format)",
-      "Bash(npx shadcn@latest add:*)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build)",
+      "Bash(pnpm format)",
+      "Bash(pnpm dlx shadcn@latest add:*)",
       "Bash(git status)",
       "Bash(git diff:*)",
       "mcp__playwright",
