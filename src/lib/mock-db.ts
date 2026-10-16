@@ -1,5 +1,5 @@
-// Mock "baza" u memoriji. Sljedeće subote ovaj fajl nestaje,
-// a funkcije u src/api/ počinju da zovu pravi backend.
+// Mock "baza" u memoriji, zajednička za sve feature-e. Sljedeće subote ovaj fajl nestaje,
+// a funkcije u src/features/<ime>/api/ počinju da zovu pravi backend.
 
 const KASNJENJE_MS = 400
 

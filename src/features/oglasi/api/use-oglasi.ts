@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { oglasiApi } from '@/api/oglasi'
+import { oglasiApi } from './oglasi-api'
 
 export function useOglasi(pretraga: string) {
   return useQuery({

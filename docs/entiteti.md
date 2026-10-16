@@ -2,8 +2,11 @@
 
 > Ovaj fajl je specifikacija za backend radionicu (sljedeće subote).
 > Za svaki entitet: polja sa tipovima, veze, i ko šta smije da radi.
+> Tip entiteta je u `src/features/<ime>/types.ts`, a mock API u `src/features/<ime>/api/<ime>-api.ts`.
 
 ## Oglas (primjer, zamijenite svojim)
+
+Kod: `src/features/oglasi/` (`types.ts`, `api/oglasi-api.ts`, `api/use-oglasi.ts`).
 
 | Polje | Tip | Obavezno | Napomena |
 | --- | --- | --- | --- |

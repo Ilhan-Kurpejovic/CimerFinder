@@ -8,24 +8,37 @@ Dizajn je opisan u @DESIGN.md, entiteti u @docs/entiteti.md.
 ## Komande
 - `npm run dev`: dev server na http://localhost:5173
 - `npm run typecheck`: TypeScript provjera
-- `npm run lint`: oxlint
+- `npm run lint`: oxlint i provjera granica između feature-a
 - `npm run build`: produkcijski build
 
+## Feature-first
+Svaka funkcionalnost (oglasi, korisnici, poruke…) živi u `src/features/<ime>/` i ima samo
+podfoldere koji joj trebaju: `api/`, `components/`, `hooks/`, `types.ts`. Feature-i ne uvoze
+jedan drugog; ruta u `src/app/routes/` ih spaja na jednoj stranici. Zajednički kod ide u
+`src/components/ui` ili `src/lib`, i to tek kad ga koriste bar dva feature-a.
+Smjer zavisnosti: zajednički kod -> features -> app, nikad obrnuto.
+
 ## Struktura
-- `src/types/`: tipovi entiteta, jedan fajl po entitetu
-- `src/api/`: jedino mjesto koje dohvata podatke (trenutno mock iz `mock-db.ts`)
-- `src/hooks/`: TanStack Query hookovi oko `src/api/`
+- `src/app/router.tsx`: sve rute; `src/app/providers.tsx`: globalni provideri (TanStack Query)
+- `src/app/routes/`: jedan fajl po ruti, samo spaja feature-e i layout
+- `src/features/<ime>/types.ts`: tipovi entiteta tog feature-a
+- `src/features/<ime>/api/<ime>-api.ts`: jedino mjesto koje dohvata podatke (trenutno mock)
+- `src/features/<ime>/api/use-<ime>.ts`: TanStack Query hookovi oko API-ja
+- `src/features/<ime>/components/`: komponente tog feature-a (npr. `oglas-kartica.tsx`)
 - `src/components/ui/`: shadcn/ui komponente, dodaju se sa `npx shadcn@latest add <ime>`
-- `src/components/<oblast>/`: komponente jedne oblasti (npr. `oglasi/`)
-- `src/pages/`: jedna stranica = jedna ruta, rute su u `src/router.tsx`
+- `src/components/layout/`: layout aplikacije (zaglavlje, navigacija)
+- `src/lib/`: `utils.ts` (`cn`) i `mock-db.ts` (mock baza i kašnjenje)
 
 ## Pravila
-- Komponente i stranice nikad ne zovu `src/api/` direktno, nego kroz hook iz `src/hooks/`
+- Feature ne uvozi drugi feature; `src/components` i `src/lib` ne uvoze iz `src/features` ni `src/app`
+- Bez barrel `index.ts` fajlova: uvozi se direktno fajl (`@/features/oglasi/components/oglasi-lista`)
+- Komponente i rute nikad ne zovu `*-api.ts` direktno, nego kroz hook iz `use-<ime>.ts`
 - Prvo postojeća komponenta iz `src/components/ui`, tek onda nova
 - Boje, fontovi i radius samo iz tokena u `src/index.css`, bez hex vrijednosti u komponentama
 - Svaka lista i stranica sa podacima ima loading, empty i error stanje
 - Sav tekst za korisnika je na crnogorskom
 - Bez `any` i bez `!` (non-null assertion)
+- Ako nisi siguran kako radi API neke biblioteke (Tailwind v4, React Router 8, TanStack Query 5), provjeri dokumentaciju preko Context7, ne pogađaj.
 
 ## Gotovo je kad
 - `npm run typecheck` i `npm run lint` prolaze

@@ -1,9 +1,9 @@
 import { createBrowserRouter } from 'react-router'
 
+import { NijePronadjeno } from '@/app/routes/nije-pronadjeno'
+import { Oglasi } from '@/app/routes/oglasi'
+import { Pocetna } from '@/app/routes/pocetna'
 import { AppLayout } from '@/components/layout/app-layout'
-import { NijePronadjeno } from '@/pages/nije-pronadjeno'
-import { Oglasi } from '@/pages/oglasi'
-import { Pocetna } from '@/pages/pocetna'
 
 export const router = createBrowserRouter([
   {

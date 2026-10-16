@@ -1,5 +1,6 @@
-import type { NoviOglas, Oglas } from '@/types/oglas'
-import { NijePronadjenoError, sacekaj } from './mock-db'
+import { NijePronadjenoError, sacekaj } from '@/lib/mock-db'
+
+import type { NoviOglas, Oglas } from '../types'
 
 let oglasi: Oglas[] = [
   {
