@@ -1,27 +1,34 @@
-# Entities
+﻿# Entities
 
-> This file is the contract between the frontend and the backend (next workshop).
-> For each entity: fields with types, relations, and who is allowed to do what.
-> The entity type lives in `frontend/src/features/<name>/types.ts` and the mock API in
-> `frontend/src/features/<name>/api/<name>-api.ts`.
+## Listing
 
-## Listing (example, replace with your own)
+Code: frontend/src/features/listings/types.ts and api/listings-api.ts.
 
-Code: `frontend/src/features/listings/` (`types.ts`, `api/listings-api.ts`, `api/use-listings.ts`).
+| Field | Type | Meaning |
+| --- | --- | --- |
+| id | number | Generated identifier |
+| kind | room or roommate | Room listing or person seeking a shared home |
+| title | string | Headline, 8 to 90 characters in the form |
+| description | string | Room, habits and expectations, 40 to 3000 characters |
+| price | number | Monthly rent or budget, 1 to 5000 EUR |
+| city | string | Selected Serbian city |
+| neighborhood | string | Neighborhood or preferred area |
+| imageUrl | string | Photo URL or uploaded data URL |
+| area | number | Room size or preferred size, 1 to 500 square meters |
+| roommates | number | Number of roommates, 1 to 10 |
+| name | string | Person posting the listing |
+| age | number | 18 to 100 |
+| occupation | string | Job or field of study |
+| avatar | string | Illustrative profile photo |
+| tags | string array | Amenities or lifestyle preferences |
+| createdAt | ISO date string | Publication date |
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| id | number | yes | assigned by the backend |
-| title | string, 3–80 characters | yes | |
-| description | string | no | |
-| price | number ≥ 0, EUR | yes | |
-| category | `games` \| `consoles` \| `accessories` | yes | |
-| city | string | yes | |
-| imageUrl | URL | no | |
-| createdAt | date | yes | assigned by the backend |
+Mock API exposes list(search), get(id), create(input), update(id, changes), remove(id), with simulated latency. Hooks use TanStack Query and invalidate listing queries after creation. Missing IDs reject with NotFoundError. The mock list is persisted in cimer-listings localStorage; no server requests are made. Future REST equivalents: GET /listings?search=, GET /listings/:id, POST /listings, PATCH /listings/:id, DELETE /listings/:id.
 
-**Relations:** a listing belongs to one user (the seller).
+## Demo user and favorites
 
-**Access rules:** everyone can see listings; only a signed-in user can create one; only the author can edit or delete their listing.
+cimer-user stores name and email. Demo login validates an email and a six-character minimum password, then discards the password. It provides no security or authorization. Publishing is intentionally available without login for demonstration.
 
-**API the frontend expects:** `GET /listings?search=`, `GET /listings/:id`, `POST /listings`, `PATCH /listings/:id`, `DELETE /listings/:id`.
+cimer-saved stores an array of listing IDs, shared across header, cards, details and the favorites route using a local external-store hook.
+
+Contact messages are validated and acknowledged in the modal but never sent or stored. There is no messaging service, backend, payment flow or real account system.

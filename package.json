@@ -3,10 +3,10 @@
   "private": true,
   "packageManager": "pnpm@12.14.0",
   "scripts": {
-    "dev": "pnpm --filter frontend dev",
-    "typecheck": "pnpm --filter frontend typecheck",
-    "lint": "pnpm --filter frontend lint",
-    "build": "pnpm --filter frontend build",
-    "format": "pnpm --filter frontend format"
+    "dev": "npm --prefix frontend run dev",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "lint": "npm --prefix frontend run lint",
+    "build": "npm --prefix frontend run build",
+    "format": "npm --prefix frontend run format"
   }
 }

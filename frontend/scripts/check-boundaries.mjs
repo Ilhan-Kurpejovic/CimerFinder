@@ -20,7 +20,7 @@ function allFiles(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) return allFiles(fullPath)
-    return /\.tsx?$/.test(entry.name) ? [fullPath] : []
+    return /\.[jt]sx?$/.test(entry.name) ? [fullPath] : []
   })
 }
 

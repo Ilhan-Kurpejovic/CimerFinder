@@ -1,6 +1,6 @@
-# [App name]
+# CimerFinder
 
-[One sentence: what the app does and for whom.]
+CimerFinder helps people find rooms and compatible roommates in Serbian cities. The current version is a browser-local React demo without a backend.
 
 This is a monorepo: one repository for the whole app.
 - `frontend/`: React app (Workshop 3). Details in @frontend/CLAUDE.md
@@ -8,7 +8,7 @@ This is a monorepo: one repository for the whole app.
 - `docs/entities.md`: entities and the API contract shared by frontend and backend
 
 ## Language
-All code, identifiers, comments, commit messages, docs and UI copy are in English.
+Code, identifiers, comments and docs are in English. Product UI copy is in Serbian Latin to match the supplied brief and branding.
 You may talk to me in any language.
 
 ## Commands (run from the repo root)

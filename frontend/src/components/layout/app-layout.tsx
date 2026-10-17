@@ -1,41 +1,97 @@
-import { NavLink, Outlet } from 'react-router'
-
-import { cn } from '@/lib/utils'
-
-const links = [
-  { to: '/', label: 'Home' },
-  { to: '/listings', label: 'Listings' },
-]
-
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { ArrowUpRight, Heart, House, LogOut, Menu, Plus, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useLocalState } from '@/lib/use-local-state'
 export function AppLayout() {
+  const [open, setOpen] = useState(false)
+  const [user, setUser] = useLocalState<{ name: string; email: string } | null>('cimer-user', null)
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    setOpen(false)
+    if (hash) requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView())
+    else window.scrollTo(0, 0)
+  }, [pathname, hash])
   return (
-    <div className="min-h-dvh">
-      <header className="border-b bg-card">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <span className="font-heading text-lg font-bold text-primary">App name</span>
-          <ul className="flex gap-6 text-sm">
-            {links.map((link) => (
-              <li key={link.to}>
-                <NavLink
-                  to={link.to}
-                  end
-                  className={({ isActive }) =>
-                    cn(
-                      'text-muted-foreground hover:text-foreground',
-                      isActive && 'font-semibold text-foreground',
-                    )
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="app-shell">
+      <header className="site-header">
+        <div className="container header-inner">
+          <Link to="/" className="brand" aria-label="CimerFinder početna">
+            <span className="brand-icon">
+              <House size={21} strokeWidth={2.2} />
+            </span>
+            Cimer<span>Finder</span>
+            <i />
+          </Link>
+          <button
+            className="mobile-toggle"
+            aria-label={open ? 'Zatvori meni' : 'Otvori meni'}
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X /> : <Menu />}
+          </button>
+          <nav className={open ? 'main-nav open' : 'main-nav'} aria-label="Glavna navigacija">
+            <NavLink to="/" end>
+              Početna
+            </NavLink>
+            <NavLink to="/listings">Pronađi dom</NavLink>
+            <NavLink to="/roommates">Pronađi cimera</NavLink>
+            <NavLink className="mobile-nav-link" to="/saved">
+              Sačuvani oglasi
+            </NavLink>
+            <NavLink className="mobile-nav-link" to="/post">
+              Objavi oglas
+            </NavLink>
+            <Link to="/#kako-funkcionise">Kako funkcioniše</Link>
+          </nav>
+          <div className="header-actions">
+            <Link className="saved-nav" to="/saved" aria-label="Sačuvani oglasi">
+              <Heart size={20} />
+            </Link>
+            {user ? (
+              <button className="login-link" onClick={() => setUser(null)} title="Odjavi se">
+                {user.name.split(' ')[0]} <LogOut size={15} />
+              </button>
+            ) : (
+              <Link className="login-link" to="/login">
+                Prijavi se <ArrowUpRight size={15} />
+              </Link>
+            )}
+            <Link className="btn btn-primary nav-post" to="/post">
+              <Plus size={16} />
+              Objavi oglas
+            </Link>
+          </div>
+        </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main>
         <Outlet />
       </main>
+      <footer className="site-footer">
+        <div className="container footer-top">
+          <div>
+            <Link className="brand" to="/">
+              <span className="brand-icon">
+                <House size={20} />
+              </span>
+              Cimer<span>Finder</span>
+              <i />
+            </Link>
+            <p>Dobar dom počinje dobrim cimerom.</p>
+          </div>
+          <div className="footer-links">
+            <Link to="/listings">Pronađi dom</Link>
+            <Link to="/roommates">Pronađi cimera</Link>
+            <Link to="/post">
+              Objavi oglas <ArrowUpRight size={14} />
+            </Link>
+          </div>
+        </div>
+        <div className="container footer-bottom">
+          <span>© {new Date().getFullYear()} CimerFinder. Napravljeno za zajedničke početke.</span>
+          <span>Demo aplikacija · Podaci se čuvaju na tvom uređaju.</span>
+        </div>
+      </footer>
     </div>
   )
 }

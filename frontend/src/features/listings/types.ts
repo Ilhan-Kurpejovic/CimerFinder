@@ -1,13 +1,19 @@
-// Example entity. Replace it with your app's own entities (see docs/entities.md).
 export type Listing = {
   id: number
   title: string
   description: string
   price: number
-  category: 'games' | 'consoles' | 'accessories'
   city: string
+  neighborhood: string
   imageUrl: string
   createdAt: string
+  area: number
+  roommates: number
+  name: string
+  age: number
+  occupation: string
+  avatar: string
+  tags: string[]
+  kind: 'room' | 'roommate'
 }
-
 export type NewListing = Omit<Listing, 'id' | 'createdAt'>

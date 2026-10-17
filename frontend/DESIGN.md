@@ -1,29 +1,19 @@
-# [App name]: design
+﻿# CimerFinder design
 
-> The team fills this file in together with Claude. Prompt (any language is fine):
-> "Interview me about our app's design, one question at a time, then fill in DESIGN.md
-> and update the tokens in src/index.css."
+## Product and audience
+Find a room, a compatible roommate and a welcoming shared home. Designed for students and young professionals in Serbian cities, with Serbian Latin product copy.
 
-## Product
-[What the app does, in one sentence.]
+## Direction
+Warm, personal, calm. A light lavender hero and purple brand derived from the supplied CimerFinder reference. An editorial heading, generous whitespace and real interior photography make the room search feel welcoming.
 
-## Users
-[Who uses it, their age, which device they use most.]
+## Tokens
+All values live in src/index.css. Primary purple #7044c6; dark ink #292437; lavender canvas #f6f3fc; pale purple #f1ebfa; white surfaces; subtle #eae6ef borders. Green appears only on positive confirmations. Manrope for headings and DM Sans for text, with local sans-serif fallbacks. Rounded cards, restrained shadows and asymmetrical hero photo corners.
 
-## Tone
-[Three adjectives, e.g. playful, fast, reliable.]
+## Layout
+1220 px maximum content width. Three listing columns on desktop, two in the filtered results area and one on mobile. Compact stacked mobile search, a collapsible navigation, full-width form controls and a reading-focused detail layout. No horizontal content scrolling. Primary actions use purple, secondary actions use outlined or text styling.
 
-## Visuals
-- Colors: [primary, accent, background]. Tokens live in `src/index.css`.
-- Fonts: [headings], [body]. Two fonts at most.
-- Shape: [rounded or sharp, shadows or borders].
-- Images: [what kind, how large].
-- Icons: `lucide-react` only.
+## Content and interaction
+Realistic mock rooms and profiles for Beograd, Novi Sad and Nis. Every input is labeled, icons accompany text, focus rings are visible and reduced-motion preferences are respected. Listings support loading, error and empty states. Native modal dialog provides keyboard focus management. Demo actions are clearly labeled; no artificial verification badges or invented platform statistics.
 
-## References
-- `docs/ref/[image].png`: [what you like about it, and what you don't]
-
-## Don't
-- Gradients without a reason, emoji instead of icons, a "Welcome to…" hero
-- Everything in cards with shadows
-- [your own rules]
+## Asset sources
+Unsplash interior photographs, Pravatar profile photos, Lucide icons. CSS house illustration and an SVG underline are code-native decorative assets.

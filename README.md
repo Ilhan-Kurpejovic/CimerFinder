@@ -1,69 +1,48 @@
-# AI-DEV 2026 · Workshop 3 · Monorepo starter
+﻿# CimerFinder
 
-A monorepo keeps every part of the app in one repository: `frontend/` today, `backend/` next workshop,
-and shared docs in `docs/`. One clone, one install, one pull request for a change that touches both sides,
-and the agent sees the whole app at once.
+A room and roommate finder for Serbian cities, built on the supplied ai-frontend-starter monorepo. The UI is in Serbian Latin, with a lavender identity based on the supplied reference.
 
-React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui, set up for working with Claude Code.
+## Run locally
 
-## Getting started
+Node.js 22.12+ is required. From the repository root:
 
-For your team: click **Use this template** on GitHub to create your own repository, then clone it.
+    npm --prefix frontend install
+    npm run dev
 
-The course uses [pnpm](https://pnpm.io). Install it once, then run the project from the repo root:
+Open http://localhost:5173. On Windows PowerShell, use npm.cmd if the execution policy blocks npm.ps1.
 
-```bash
-npm install -g pnpm   # once per machine
-pnpm install
-pnpm dev              # http://localhost:5173
-pnpm lint             # oxlint + boundary check between features
-```
+    npm run typecheck
+    npm run lint
+    npm run build
 
-Open the repo root in VS Code and start the Claude Code extension.
+Production files are generated in frontend/dist. To preview a build, run npm --prefix frontend run preview. A static host must serve index.html for application routes such as /listings/1.
 
-## Layout
+## Included
 
-```
-frontend/         React app (this workshop)
-  src/app/        router.tsx, providers.tsx and routes/ (one file per route)
-  src/features/   one folder per feature: api/, components/, types.ts (example: listings)
-  src/components/ ui/ (shadcn) and layout/
-  src/lib/        utils.ts and mock-db.ts
-backend/          API, database and auth (next workshop)
-docs/entities.md  entities and the API contract between frontend and backend
-```
+- Home page with room/roommate search, city and monthly budget.
+- Room listings and roommate profiles with URL-based filters, keyword search, sorting and empty states.
+- Listing details, persistent favorites and a simulated contact dialog.
+- Validated publishing form with optional image upload and immediate detail-page navigation.
+- Demo login with email and password validation, show/hide password and logout.
+- Responsive navigation and layouts, reduced-motion support, loading/error states.
 
-Features do not import each other; a route combines them. `pnpm lint` checks these boundaries
-(`frontend/scripts/check-boundaries.mjs`) and reports the exact file and import that breaks them.
+## Stack and structure
 
-## Language
+React 19, Vite 8, Tailwind CSS 4, shadcn/ui, React Router, TanStack Query, React Hook Form, Zod and Lucide. The starter's TypeScript setup is retained.
 
-All code, identifiers, comments, commit messages, docs and UI copy are in English.
-Talking to Claude in any language is fine.
+    frontend/src/app/           Routing and page composition
+    frontend/src/features/     Listings and demo authentication
+    frontend/src/components/   Shared layout and shadcn/ui primitives
+    frontend/src/lib/          Mock helpers and local state
+    backend/                   Reserved for a future backend
+    docs/entities.md           Data contract
 
-## First steps with Claude
+## Demo behavior
 
-1. "Interview me about our app's design, one question at a time, then fill in frontend/DESIGN.md and update the tokens in frontend/src/index.css."
-2. Fill in the first sentence of CLAUDE.md with your app's topic.
-3. `/new-feature <name>: <description>` for each feature of your app, then delete the `frontend/src/features/listings` example.
-4. `/new-page` for each screen: home, list, detail, form, sign-in.
-5. `/check` and the `ui-reviewer` agent before every commit.
+No backend or real authentication is connected. No messages are sent. Any valid email and a password of at least six characters can be used for demo login. Passwords are never saved. Listings, favorite IDs and the demo user are stored in this browser's localStorage. Uploaded images are limited to 2 MB and stored as data URLs; browser storage capacity still applies. Clear the cimer-listings, cimer-saved and cimer-user keys in localStorage to reset the demo.
 
-## What is in the .claude folder
+Seed photography comes from Unsplash, profile images from Pravatar and fonts from Google Fonts. These assets require an internet connection and are illustrative.
 
-| File | Purpose |
-| --- | --- |
-| `CLAUDE.md` | Monorepo overview, language rule, root commands |
-| `frontend/CLAUDE.md` | Stack, feature-first structure, rules, "done when" |
-| `frontend/DESIGN.md` | Visual identity the agent reads before UI changes |
-| `.claude/rules/` | Rules that load only for matching files (data, components, styling, features) |
-| `.claude/commands/` | `/new-page`, `/new-feature`, `/check` |
-| `.claude/skills/design-system/` | Design rules that load when working on UI |
-| `.claude/agents/ui-reviewer.md` | Subagent that reviews UI and changes nothing |
-| `.claude/settings.json` | Permissions, Explanatory output style and a hook that formats every edited file |
-| `.mcp.json` | Playwright (browser), shadcn (component catalog) and Context7 (current library docs) |
+## Verification
 
-The MCP servers in `.mcp.json` start with `npx`, because `npx` ships with Node and works no matter which
-package manager you use.
-
-Recommended: `/plugin install frontend-design@claude-plugins-official`
+Type checking, the production build and lint/boundary checks are available through the commands above. Run npm --prefix frontend run check:mock for mock API checks. Browser screenshots and interactive visual QA were not available in the implementation session.
