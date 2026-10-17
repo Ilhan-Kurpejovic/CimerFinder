@@ -1,58 +1,69 @@
-# AI-DEV 2026 · Radionica 3 · Frontend starter
+# AI-DEV 2026 · Workshop 3 · Monorepo starter
 
-React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui, pripremljen za rad sa Claude Code-om.
+A monorepo keeps every part of the app in one repository: `frontend/` today, `backend/` next workshop,
+and shared docs in `docs/`. One clone, one install, one pull request for a change that touches both sides,
+and the agent sees the whole app at once.
 
-## Pokretanje
+React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui, set up for working with Claude Code.
 
-Za tim: na GitHubu kliknite **Use this template** i napravite svoj repozitorijum, pa ga klonirajte.
+## Getting started
 
-Kurs koristi [pnpm](https://pnpm.io). Instalirajte ga jednom, pa pokrenite projekat:
+For your team: click **Use this template** on GitHub to create your own repository, then clone it.
+
+The course uses [pnpm](https://pnpm.io). Install it once, then run the project from the repo root:
 
 ```bash
-npm install -g pnpm   # jednom po računaru
+npm install -g pnpm   # once per machine
 pnpm install
 pnpm dev              # http://localhost:5173
-pnpm lint             # oxlint + provjera granica između feature-a
+pnpm lint             # oxlint + boundary check between features
 ```
 
-Radi i sa npm-om (`npm install`, `npm run dev`), ali na kursu koristimo pnpm i u repozitorijumu je samo `pnpm-lock.yaml`.
+Open the repo root in VS Code and start the Claude Code extension.
 
-Otvorite folder u VS Code-u i pokrenite Claude Code ekstenziju.
-
-## Struktura (feature-first)
+## Layout
 
 ```
-src/
-  app/            router.tsx, providers.tsx i routes/ (jedan fajl po ruti)
-  features/<ime>/ api/, components/, types.ts jedne funkcionalnosti (primjer: oglasi)
-  components/     ui/ (shadcn) i layout/
-  lib/            utils.ts i mock-db.ts
+frontend/         React app (this workshop)
+  src/app/        router.tsx, providers.tsx and routes/ (one file per route)
+  src/features/   one folder per feature: api/, components/, types.ts (example: listings)
+  src/components/ ui/ (shadcn) and layout/
+  src/lib/        utils.ts and mock-db.ts
+backend/          API, database and auth (next workshop)
+docs/entities.md  entities and the API contract between frontend and backend
 ```
 
-Feature-i ne uvoze jedan drugog, a ruta ih spaja. `pnpm lint` provjerava i te granice
-(`scripts/check-boundaries.mjs`) i javlja tačan fajl i import koji ih krši.
+Features do not import each other; a route combines them. `pnpm lint` checks these boundaries
+(`frontend/scripts/check-boundaries.mjs`) and reports the exact file and import that breaks them.
 
-## Prvi koraci sa Claude-om
+## Language
 
-1. „Ispitaj me o dizajnu naše aplikacije, jedno po jedno pitanje, pa popuni DESIGN.md i ažuriraj tokene u src/index.css.“
-2. Dopunite prvu rečenicu u CLAUDE.md temom vaše aplikacije.
-3. `/novi-feature <ime>: <opis>` za svaku funkcionalnost vaše aplikacije, pa obrišite primjer `src/features/oglasi`.
-4. `/nova-stranica` za svaki ekran: početna, lista, detalj, forma, prijava.
-5. `/provjeri` i `ui-recenzent` prije svakog commita.
+All code, identifiers, comments, commit messages, docs and UI copy are in English.
+Talking to Claude in any language is fine.
 
-## Šta je u .claude folderu
+## First steps with Claude
 
-| Fajl | Čemu služi |
+1. "Interview me about our app's design, one question at a time, then fill in frontend/DESIGN.md and update the tokens in frontend/src/index.css."
+2. Fill in the first sentence of CLAUDE.md with your app's topic.
+3. `/new-feature <name>: <description>` for each feature of your app, then delete the `frontend/src/features/listings` example.
+4. `/new-page` for each screen: home, list, detail, form, sign-in.
+5. `/check` and the `ui-reviewer` agent before every commit.
+
+## What is in the .claude folder
+
+| File | Purpose |
 | --- | --- |
-| `CLAUDE.md` | Stack, komande, feature-first struktura, pravila, „gotovo je kad“ |
-| `DESIGN.md` | Vizuelni identitet koji agent čita prije UI izmjena |
-| `.claude/rules/` | Pravila koja se učitaju samo za određene fajlove (podaci, komponente, stilovi, feature-i) |
-| `.claude/commands/` | `/nova-stranica`, `/novi-feature`, `/provjeri` |
-| `.claude/skills/design-system/` | Dizajn pravila koja se učitaju kad se radi UI |
-| `.claude/agents/ui-recenzent.md` | Subagent koji pregleda UI i ništa ne mijenja |
-| `.claude/settings.json` | Dozvole, Explanatory stil odgovora i hook koji formatira svaki izmijenjen fajl |
-| `.mcp.json` | Playwright (browser), shadcn (katalog komponenti) i Context7 (aktuelna dokumentacija biblioteka) |
+| `CLAUDE.md` | Monorepo overview, language rule, root commands |
+| `frontend/CLAUDE.md` | Stack, feature-first structure, rules, "done when" |
+| `frontend/DESIGN.md` | Visual identity the agent reads before UI changes |
+| `.claude/rules/` | Rules that load only for matching files (data, components, styling, features) |
+| `.claude/commands/` | `/new-page`, `/new-feature`, `/check` |
+| `.claude/skills/design-system/` | Design rules that load when working on UI |
+| `.claude/agents/ui-reviewer.md` | Subagent that reviews UI and changes nothing |
+| `.claude/settings.json` | Permissions, Explanatory output style and a hook that formats every edited file |
+| `.mcp.json` | Playwright (browser), shadcn (component catalog) and Context7 (current library docs) |
 
-MCP serveri u `.mcp.json` se pokreću sa `npx`, jer `npx` dolazi uz Node i radi bez obzira na to koji package manager koristite.
+The MCP servers in `.mcp.json` start with `npx`, because `npx` ships with Node and works no matter which
+package manager you use.
 
-Preporučeno: `/plugin install frontend-design@claude-plugins-official`
+Recommended: `/plugin install frontend-design@claude-plugins-official`

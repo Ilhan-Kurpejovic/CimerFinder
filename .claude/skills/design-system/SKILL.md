@@ -1,15 +1,15 @@
 ---
 name: design-system
-description: Dizajn pravila ovog projekta. Koristi kad praviš ili mijenjaš bilo koju UI komponentu, stranicu ili stil, i kad korisnik traži da nešto „izgleda bolje“.
+description: This project's design rules. Use when creating or changing any UI component, page or style, and when the user asks for something to "look better".
 ---
 
-# Dizajn sistem
+# Design system
 
-1. Pročitaj DESIGN.md prije bilo koje UI izmjene. Ako je prazan, predloži korisniku da ga prvo popunite zajedno.
-2. Boje, fontovi i radius dolaze samo iz tokena u `src/index.css`. Ako treba nova vrijednost, dodaj token, ne hex u kodu.
-3. Hijerarhija: jedan jasan glavni element po ekranu (naslov ili akcija), sve ostalo mu je podređeno.
-4. Tipografija: najviše dvije veličine naslova po ekranu; tekst 14–16 px; linije do ~70 znakova.
-5. Razmaci: velika praznina između sekcija (`py-12` ili više), mala unutar grupa (`gap-2` do `gap-4`).
-6. Uzdržano: bez gradijenata, sjena i animacija bez razloga; ikone samo iz `lucide-react`, nikad emoji.
-7. Kada korisnik traži novi ekran ili redizajn, ponudi 2–3 različite varijante na privremenim rutama (`/v1`, `/v2`, `/v3`), sa screenshotom svake, pa obriši one koje ne izabere.
-8. Uvijek završi screenshotom na 375 px i 1440 px preko Playwright MCP-a.
+1. Read frontend/DESIGN.md before any UI change. If it is empty, suggest filling it in together first.
+2. Colors, fonts and radius come only from tokens in `frontend/src/index.css`. If a new value is needed, add a token, not a hex value in code.
+3. Hierarchy: one clear main element per screen (a heading or an action), everything else is secondary to it.
+4. Typography: at most two heading sizes per screen; body text 14–16 px; lines up to ~70 characters.
+5. Spacing: large gaps between sections (`py-12` or more), small gaps inside groups (`gap-2` to `gap-4`).
+6. Restraint: no gradients, shadows or animations without a reason; icons only from `lucide-react`, never emoji.
+7. When the user asks for a new screen or a redesign, offer 2–3 different variants on temporary routes (`/v1`, `/v2`, `/v3`) with a screenshot of each, then delete the ones they do not pick.
+8. Always finish with screenshots at 375 px and 1440 px via Playwright MCP.

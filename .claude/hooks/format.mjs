@@ -1,20 +1,24 @@
-// PostToolUse hook: poslije svake izmjene fajla pokreće Prettier na tom fajlu.
-// Pravilo „formatiraj kod“ u CLAUDE.md bi bila molba; ovaj hook je garancija.
-// Koristi lokalni Prettier iz node_modules (instaliran sa `pnpm install`), bez npx-a.
+// PostToolUse hook: after every file edit, runs Prettier on that file.
+// A "format the code" rule in CLAUDE.md would be a request; this hook is a guarantee.
+// Uses the local Prettier from frontend/node_modules (installed by `pnpm install`), no npx.
+// Only formats files inside frontend/; the backend will bring its own formatter.
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 
-const projekat = process.env.CLAUDE_PROJECT_DIR ?? path.resolve(import.meta.dirname, '../..')
-const prettier = path.join(projekat, 'node_modules', 'prettier', 'bin', 'prettier.cjs')
+const root = process.env.CLAUDE_PROJECT_DIR ?? path.resolve(import.meta.dirname, '../..')
+const frontend = path.join(root, 'frontend')
+const prettier = path.join(frontend, 'node_modules', 'prettier', 'bin', 'prettier.cjs')
 
-let ulaz = ''
-process.stdin.on('data', (dio) => (ulaz += dio))
+let input = ''
+process.stdin.on('data', (chunk) => (input += chunk))
 process.stdin.on('end', () => {
   try {
-    const fajl = JSON.parse(ulaz).tool_input?.file_path ?? ''
-    if (!/\.(tsx?|css|json|md)$/.test(fajl)) return
-    execFileSync(process.execPath, [prettier, '--write', fajl], { cwd: projekat, stdio: 'ignore' })
+    const file = path.resolve(root, JSON.parse(input).tool_input?.file_path ?? '')
+    const relative = path.relative(frontend, file)
+    if (relative.startsWith('..') || path.isAbsolute(relative)) return
+    if (!/\.(tsx?|css|json|md)$/.test(file)) return
+    execFileSync(process.execPath, [prettier, '--write', file], { cwd: frontend, stdio: 'ignore' })
   } catch {
-    // Neuspjelo formatiranje ne smije da zaustavi agenta.
+    // A failed format must never stop the agent.
   }
 })
