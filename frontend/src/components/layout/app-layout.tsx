@@ -1,10 +1,9 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { ArrowUpRight, Heart, House, LogOut, Menu, Plus, X } from 'lucide-react'
+import { ArrowUpRight, Heart, House, Menu, Plus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useLocalState } from '@/lib/use-local-state'
+import { AccountMenu } from './account-menu'
 export function AppLayout() {
   const [open, setOpen] = useState(false)
-  const [user, setUser] = useLocalState<{ name: string; email: string } | null>('cimer-user', null)
   const { pathname, hash } = useLocation()
   useEffect(() => {
     setOpen(false)
@@ -48,15 +47,7 @@ export function AppLayout() {
             <Link className="saved-nav" to="/saved" aria-label="Sačuvani oglasi">
               <Heart size={20} />
             </Link>
-            {user ? (
-              <button className="login-link" onClick={() => setUser(null)} title="Odjavi se">
-                {user.name.split(' ')[0]} <LogOut size={15} />
-              </button>
-            ) : (
-              <Link className="login-link" to="/login">
-                Prijavi se <ArrowUpRight size={15} />
-              </Link>
-            )}
+            <AccountMenu />
             <Link className="btn btn-primary nav-post" to="/post">
               <Plus size={16} />
               Objavi oglas

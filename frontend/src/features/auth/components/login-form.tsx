@@ -1,18 +1,22 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useNavigate, Link, useSearchParams } from 'react-router'
 import { ArrowUpRight, Heart, House } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useLocalState } from '@/lib/use-local-state'
+import { useCurrentUser } from '@/lib/use-current-user'
+import { signOut } from '@/lib/profile-store'
+import { useSignIn } from '../api/use-auth'
 const schema = z.object({
   email: z.email('Unesi ispravnu email adresu.'),
   password: z.string().min(6, 'Lozinka treba da ima najmanje 6 znakova.'),
 })
 export function LoginForm() {
-  const [user, setUser] = useLocalState<{ name: string; email: string } | null>('cimer-user', null)
+  const user = useCurrentUser()
+  const login = useSignIn()
+  const [params] = useSearchParams()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const {
@@ -53,7 +57,10 @@ export function LoginForm() {
             <Link className="btn btn-primary" to="/listings">
               Istraži oglase <ArrowUpRight size={18} />
             </Link>
-            <button className="text-link" onClick={() => setUser(null)}>
+            <Link className="text-link" to="/profile">
+              Moj profil
+            </Link>
+            <button className="text-link" onClick={signOut}>
               Odjavi se
             </button>
           </div>
@@ -65,10 +72,13 @@ export function LoginForm() {
             <h2>Lepo je videti te.</h2>
             <p>Prijavi se i napravi korak bliže svom novom domu.</p>
             <form
-              onSubmit={handleSubmit((values) => {
-                const raw = values.email.split('@')[0]
-                setUser({ name: raw.charAt(0).toUpperCase() + raw.slice(1), email: values.email })
-                navigate('/listings')
+              onSubmit={handleSubmit(async (values) => {
+                try {
+                  await login.mutateAsync(values.email)
+                  navigate(params.get('next') === '/post' ? '/post' : '/profile')
+                } catch {
+                  /* Display the storage error below. */
+                }
               })}
               noValidate
             >
@@ -107,8 +117,13 @@ export function LoginForm() {
                   </small>
                 )}
               </label>
-              <Button className="btn btn-primary full-width" type="submit">
-                Prijavi se <ArrowUpRight size={18} />
+              {login.isError && (
+                <p className="field-error" role="alert">
+                  Prijava nije sačuvana. Proveri prostor pregledača pa pokušaj ponovo.
+                </p>
+              )}
+              <Button className="btn btn-primary full-width" type="submit" disabled={login.isPending}>
+                {login.isPending ? 'Prijavljujem...' : 'Prijavi se'} <ArrowUpRight size={18} />
               </Button>
             </form>
             <div className="demo-box">

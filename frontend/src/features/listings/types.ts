@@ -1,5 +1,7 @@
 export type Listing = {
   id: number
+  userId?: string
+  authorBio?: string
   title: string
   description: string
   price: number

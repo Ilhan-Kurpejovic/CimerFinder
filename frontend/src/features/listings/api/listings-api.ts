@@ -1,5 +1,6 @@
 import { NotFoundError, delay } from '@/lib/mock-db'
 import type { Listing, NewListing } from '../types'
+import { currentProfile, defaultAvatar, profileComplete, readProfiles } from '@/lib/profile-store'
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1000&q=85`
 const initial: Listing[] = [
   {
@@ -125,37 +126,71 @@ function load(): Listing[] {
     return initial
   }
 }
-let listings = load()
-function persist() {
+function persist(listings: Listing[]) {
   localStorage.setItem('cimer-listings', JSON.stringify(listings))
+}
+function withAuthor(item: Listing): Listing {
+  const user = readProfiles().find((profile) => profile.id === item.userId)
+  return user
+    ? {
+        ...item,
+        name: user.name,
+        age: user.age ?? item.age,
+        occupation: user.occupation,
+        avatar: user.avatar,
+        authorBio: user.bio,
+        imageUrl: item.kind === 'roommate' ? user.avatar : item.imageUrl,
+      }
+    : item
 }
 export const listingsApi = {
   list: (search = '') =>
     delay(
-      listings.filter((l) =>
-        `${l.title} ${l.city} ${l.neighborhood} ${l.name}`
-          .toLocaleLowerCase('sr')
-          .includes(search.toLocaleLowerCase('sr')),
-      ),
+      load()
+        .map(withAuthor)
+        .filter((l) =>
+          `${l.title} ${l.city} ${l.neighborhood} ${l.name}`
+            .toLocaleLowerCase('sr')
+            .includes(search.toLocaleLowerCase('sr')),
+        ),
     ),
   get: (id: number) => {
-    const item = listings.find((l) => l.id === id)
-    return item ? delay(item) : Promise.reject(new NotFoundError('Listing', id))
+    const item = load().find((l) => l.id === id)
+    return item ? delay(withAuthor(item)) : Promise.reject(new NotFoundError('Listing', id))
   },
   create: (input: NewListing) => {
-    const item = { ...input, id: Date.now(), createdAt: new Date().toISOString().slice(0, 10) }
-    listings = [item, ...listings]
-    persist()
-    return delay(item)
+    const user = currentProfile()
+    if (!profileComplete(user))
+      return Promise.reject(new Error('Prijavi se i dopuni profil pre objavljivanja.'))
+    const item: Listing = {
+      ...input,
+      userId: user.id,
+      name: user.name,
+      age: user.age,
+      occupation: user.occupation,
+      // Store profile photos once; reads resolve them through userId.
+      avatar: defaultAvatar,
+      imageUrl: input.kind === 'roommate' ? defaultAvatar : input.imageUrl,
+      id: Date.now(),
+      createdAt: new Date().toISOString().slice(0, 10),
+    }
+    persist([item, ...load()])
+    return delay(withAuthor(item))
   },
   update: (id: number, changes: Partial<NewListing>) => {
-    listings = listings.map((l) => (l.id === id ? { ...l, ...changes } : l))
-    persist()
+    const existing = load().find((l) => l.id === id)
+    if (!existing) return Promise.reject(new NotFoundError('Listing', id))
+    if (!existing.userId || existing.userId !== currentProfile()?.id)
+      return Promise.reject(new Error('Možeš menjati samo svoje oglase.'))
+    persist(load().map((l) => (l.id === id ? { ...l, ...changes, userId: l.userId } : l)))
     return listingsApi.get(id)
   },
   remove: (id: number) => {
-    listings = listings.filter((l) => l.id !== id)
-    persist()
+    const existing = load().find((l) => l.id === id)
+    if (!existing) return Promise.reject(new NotFoundError('Listing', id))
+    if (!existing.userId || existing.userId !== currentProfile()?.id)
+      return Promise.reject(new Error('Možeš brisati samo svoje oglase.'))
+    persist(load().filter((l) => l.id !== id))
     return delay(undefined)
   },
 }

@@ -125,6 +125,7 @@ export function ListingDetail() {
               <small>{item.occupation}</small>
             </h3>
           </div>
+          {item.authorBio && <p className="author-bio">{item.authorBio}</p>}
           <p>Jedna poruka može biti početak dobre priče.</p>
           <Button
             className="btn btn-primary full-width"

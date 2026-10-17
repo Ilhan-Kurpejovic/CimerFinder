@@ -17,3 +17,6 @@ Realistic mock rooms and profiles for Beograd, Novi Sad and Nis. Every input is 
 
 ## Asset sources
 Unsplash interior photographs, Pravatar profile photos, Lucide icons. CSS house illustration and an SVG underline are code-native decorative assets.
+
+## Profile and account experience
+The top-right avatar opens links to the profile, personal listings and logout. A two-column profile page shows saved public information beside a labeled editor; it stacks on mobile. Upload preview, reset, pending, error and success states distinguish unsaved changes from the saved profile. The public author information uses current profile data, while room photographs remain property-specific. A local SVG placeholder replaces unrelated mock portraits for new users.

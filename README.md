@@ -24,6 +24,9 @@ Production files are generated in frontend/dist. To preview a build, run npm --p
 - Listing details, persistent favorites and a simulated contact dialog.
 - Validated publishing form with optional image upload and immediate detail-page navigation.
 - Demo login with email and password validation, show/hide password and logout.
+- Top-right account menu, editable profile with photo, name, age, occupation, city and biography, and a personal listings section.
+- Delete your own listings from Moji oglasi, with a confirmation dialog, pending/error feedback and refreshed lists after deletion.
+- New listings belong to the active profile and show updated author information automatically. Roommate listings use the profile photo; room photos remain independent.
 - Responsive navigation and layouts, reduced-motion support, loading/error states.
 
 ## Stack and structure
@@ -39,7 +42,9 @@ React 19, Vite 8, Tailwind CSS 4, shadcn/ui, React Router, TanStack Query, React
 
 ## Demo behavior
 
-No backend or real authentication is connected. No messages are sent. Any valid email and a password of at least six characters can be used for demo login. Passwords are never saved. Listings, favorite IDs and the demo user are stored in this browser's localStorage. Uploaded images are limited to 2 MB and stored as data URLs; browser storage capacity still applies. Clear the cimer-listings, cimer-saved and cimer-user keys in localStorage to reset the demo.
+No backend or real authentication is connected. No messages are sent. Any valid email and a password of at least six characters can be used for demo login. Passwords are never saved. Listings, favorite IDs, profiles and the active session are stored in this browser's localStorage. The same email restores the same local profile and its listings. Publishing requires a saved profile with name, age and occupation. Uploaded images are limited to 2 MB and stored as data URLs; browser storage capacity still applies. Clear the cimer-listings, cimer-saved, cimer-profiles and cimer-user keys in localStorage to reset the demo. Earlier listings without an owner are preserved but are not automatically claimed by a new account.
+
+To try profiles: sign in, open the avatar menu at the top right, choose Moj profil, save your details and photo, then publish a listing. Return to Moji oglasi to see your own listings. Edit the profile and revisit the listing to check the updated author information. Log out and use a different email to try a separate local account.
 
 Seed photography comes from Unsplash, profile images from Pravatar and fonts from Google Fonts. These assets require an internet connection and are illustrative.
 

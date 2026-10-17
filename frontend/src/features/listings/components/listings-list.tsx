@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import type { ReactNode } from 'react'
 import { SearchX } from 'lucide-react'
 import { ListingCard } from './listing-card'
 import type { Listing } from '../types'
@@ -7,11 +8,13 @@ export function ListingsList({
   loading,
   error,
   retry,
+  renderActions,
 }: {
   items: Listing[]
   loading?: boolean
   error?: boolean
   retry?: () => void
+  renderActions?: (item: Listing) => ReactNode
 }) {
   if (loading)
     return (
@@ -43,9 +46,16 @@ export function ListingsList({
     )
   return (
     <div className="listing-grid">
-      {items.map((item) => (
-        <ListingCard key={item.id} listing={item} />
-      ))}
+      {items.map((item) =>
+        renderActions ? (
+          <div className="owned-listing" key={item.id}>
+            <ListingCard listing={item} />
+            {renderActions(item)}
+          </div>
+        ) : (
+          <ListingCard key={item.id} listing={item} />
+        ),
+      )}
     </div>
   )
 }

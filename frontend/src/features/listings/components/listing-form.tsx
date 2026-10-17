@@ -7,7 +7,8 @@ import { ArrowLeft, ArrowUpRight, ImagePlus, Heart, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useLocalState } from '@/lib/use-local-state'
+import { useCurrentUser } from '@/lib/use-current-user'
+import { profileComplete } from '@/lib/profile-store'
 import { useCreateListing } from '../api/use-listings'
 const schema = z.object({
   kind: z.enum(['room', 'roommate']),
@@ -18,16 +19,13 @@ const schema = z.object({
   area: z.number().min(1, 'Unesi površinu.').max(500),
   roommates: z.number().min(1).max(10),
   description: z.string().trim().min(40, 'Napiši najmanje 40 znakova.').max(3000),
-  name: z.string().trim().min(2, 'Unesi svoje ime.'),
-  age: z.number().min(18, 'Minimalna starost je 18 godina.').max(100),
-  occupation: z.string().trim().min(2, 'Unesi zanimanje.'),
 })
 type Fields = z.infer<typeof schema>
 const tags = ['Namešteno', 'Pet friendly', 'Terasa', 'Wi-Fi', 'Rad od kuće', 'Ne pušim', 'Blizu fakulteta']
 export function ListingForm() {
   const navigate = useNavigate()
   const create = useCreateListing()
-  const [user] = useLocalState<{ name: string } | null>('cimer-user', null)
+  const user = useCurrentUser()
   const [selected, setSelected] = useState<string[]>(['Wi-Fi'])
   const [image, setImage] = useState('')
   const [imageError, setImageError] = useState('')
@@ -38,7 +36,7 @@ export function ListingForm() {
     formState: { errors },
   } = useForm<Fields>({
     resolver: zodResolver(schema),
-    defaultValues: { kind: 'room', name: user?.name || '', age: 24, roommates: 1, area: 15 },
+    defaultValues: { kind: 'room', roommates: 1, area: 15 },
   })
   const fieldError = (field: keyof Fields) =>
     errors[field] ? (
@@ -47,22 +45,54 @@ export function ListingForm() {
       </small>
     ) : null
   const submit = handleSubmit(async (values) => {
+    if (!profileComplete(user)) return
     try {
       const item = await create.mutateAsync({
         ...values,
+        userId: user.id,
+        name: user.name,
+        age: user.age,
+        occupation: user.occupation,
         tags: selected,
         imageUrl:
           image ||
           (values.kind === 'room'
             ? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=85'
-            : 'https://i.pravatar.cc/600?img=5'),
-        avatar: 'https://i.pravatar.cc/100?img=5',
+            : user.avatar),
+        avatar: user.avatar,
       })
       navigate(`/listings/${item.id}`)
     } catch {
       /* The mutation exposes a recoverable error below. */
     }
   })
+  if (!user)
+    return (
+      <div className="container page-content">
+        <div className="empty-state">
+          <h1>Prijavi se i objavi svoj oglas.</h1>
+          <p>Tako će oglas biti povezan sa tvojim profilom.</p>
+          <Link className="btn btn-primary" to="/login?next=/post">
+            Prijavi se
+          </Link>
+        </div>
+      </div>
+    )
+  if (!profileComplete(user))
+    return (
+      <div className="container page-content">
+        <div className="empty-state">
+          <h1>Prvo se predstavi budućim cimerima.</h1>
+          <p>
+            Sačuvaj ime, godine i zanimanje na svom profilu. Oglasi će automatski preuzeti te podatke i tvoju
+            profilnu fotografiju.
+          </p>
+          <Link className="btn btn-primary" to="/profile?next=/post">
+            Dopuni profil
+          </Link>
+        </div>
+      </div>
+    )
   return (
     <div className="container page-content">
       <Link className="back-link" to="/listings">
@@ -171,59 +201,64 @@ export function ListingForm() {
                 </button>
               ))}
             </div>
-            <label className="upload-zone">
-              <ImagePlus size={26} />
-              <strong>{image ? 'Promeni fotografiju' : 'Dodaj fotografiju'}</strong>
-              <span>JPG, PNG ili WebP · do 2 MB</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  if (
-                    file.size > 2 * 1024 * 1024 ||
-                    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-                  ) {
-                    setImageError('Izaberi JPG, PNG ili WebP do 2 MB.')
-                    return
-                  }
-                  setImageError('')
-                  const reader = new FileReader()
-                  reader.onload = () => setImage(String(reader.result))
-                  reader.readAsDataURL(file)
-                }}
-              />
-            </label>
-            {image && <img className="upload-preview" src={image} alt="Pregled izabrane fotografije" />}
-            {imageError && (
-              <small className="field-error" role="alert">
-                {imageError}
-              </small>
+            {watch('kind') === 'room' ? (
+              <>
+                <label className="upload-zone">
+                  <ImagePlus size={26} />
+                  <strong>{image ? 'Promeni fotografiju' : 'Dodaj fotografiju'}</strong>
+                  <span>JPG, PNG ili WebP · do 2 MB</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      if (
+                        file.size > 2 * 1024 * 1024 ||
+                        !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+                      ) {
+                        setImageError('Izaberi JPG, PNG ili WebP do 2 MB.')
+                        return
+                      }
+                      setImageError('')
+                      const reader = new FileReader()
+                      reader.onload = () => setImage(String(reader.result))
+                      reader.readAsDataURL(file)
+                    }}
+                  />
+                </label>
+                {image && <img className="upload-preview" src={image} alt="Pregled izabrane fotografije" />}
+                {imageError && (
+                  <small className="field-error" role="alert">
+                    {imageError}
+                  </small>
+                )}
+                <small className="muted">Bez fotografije koristi se ilustrativna demo fotografija.</small>
+              </>
+            ) : (
+              <div className="author-preview">
+                <img src={user.avatar} alt={user.name} />
+                <p>Ovaj oglas koristi tvoju profilnu fotografiju. Možeš je promeniti na profilu.</p>
+              </div>
             )}
-            <small className="muted">Bez fotografije koristi se ilustrativna demo fotografija.</small>
           </section>
           <section>
             <h2>
               <span>03</span>Upoznajmo se
             </h2>
-            <div className="form-grid">
-              <label>
-                Tvoje ime
-                <Input {...register('name')} placeholder="Kako da te zovemo?" />
-                {fieldError('name')}
-              </label>
-              <label>
-                Godine
-                <Input type="number" min="18" {...register('age', { valueAsNumber: true })} />
-                {fieldError('age')}
-              </label>
+            <div className="author-preview">
+              <img src={user.avatar} alt={user.name} />
+              <div>
+                <strong>
+                  {user.name}, {user.age}
+                </strong>
+                <p>{user.occupation}</p>
+                <Link className="text-link" to="/profile?next=/post">
+                  Uredi podatke na profilu →
+                </Link>
+              </div>
             </div>
-            <label>
-              Zanimanje
-              <Input {...register('occupation')} placeholder="Npr. Studentkinja arhitekture" />
-              {fieldError('occupation')}
-            </label>
+            <p className="muted">Podaci o autoru se automatski preuzimaju sa profila.</p>
           </section>
           {create.isError && (
             <p className="field-error" role="alert">

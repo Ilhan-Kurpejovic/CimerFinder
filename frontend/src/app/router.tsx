@@ -9,6 +9,7 @@ import { Roommates } from '@/app/routes/roommates'
 import { Saved } from '@/app/routes/saved'
 import { Post } from '@/app/routes/post'
 import { Login } from '@/app/routes/login'
+import { Profile } from '@/app/routes/profile'
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: '/saved', element: <Saved /> },
       { path: '/post', element: <Post /> },
       { path: '/login', element: <Login /> },
+      { path: '/profile', element: <Profile /> },
       { path: '*', element: <NotFound /> },
     ],
   },
