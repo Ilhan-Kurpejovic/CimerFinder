@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { listingsApi } from './listings-api'
+import type { NewListing } from '../types'
 
 function useProfileRefresh() {
   const client = useQueryClient()
@@ -38,6 +39,15 @@ export function useDeleteListing() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: listingsApi.remove,
+    onSuccess: () => client.invalidateQueries({ queryKey: ['listings'] }),
+  })
+}
+
+export function useUpdateListing() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, changes }: { id: number; changes: Partial<NewListing> }) =>
+      listingsApi.update(id, changes),
     onSuccess: () => client.invalidateQueries({ queryKey: ['listings'] }),
   })
 }

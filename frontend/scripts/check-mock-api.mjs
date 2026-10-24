@@ -20,6 +20,19 @@ try {
   assert.equal(original.length, 6)
   assert.equal((await listingsApi.list('GRBAVICA')).length, 2)
   assert.equal((await listingsApi.list('nonexistent neighborhood')).length, 0)
+  // Existing browser demo records refresh their copy; user text stays intact.
+  storage.set(
+    'cimer-listings',
+    JSON.stringify([
+      { ...original[1], title: 'Svetla soba, dobra energija', tags: ['Namešteno'] },
+      { ...original[1], id: 1234, title: 'Svetla soba, dobra energija', tags: ['Namešteno'] },
+    ]),
+  )
+  assert.equal((await listingsApi.get(2)).title, 'Svijetla soba, dobra energija')
+  assert.deepEqual((await listingsApi.get(2)).tags, ['Namješteno'])
+  assert.equal((await listingsApi.get(1234)).title, 'Svetla soba, dobra energija')
+  assert.deepEqual((await listingsApi.get(1234)).tags, ['Namešteno'])
+  storage.delete('cimer-listings')
   const { id: _id, createdAt: _date, ...input } = original[0]
   await assert.rejects(() => listingsApi.create(input), /profil/)
   const firstUser = signIn(' First@Example.com ')
@@ -100,8 +113,36 @@ try {
   assert.equal(restored.name, 'Updated User')
   assert.equal(restored.avatar, '/new-avatar.svg')
   assert.equal((await listingsApi.list()).filter((item) => item.userId === restored.id).length, 2)
-  await listingsApi.update(created.id, { price: 210 })
-  assert.equal((await listingsApi.get(created.id)).price, 210)
+  const edited = await listingsApi.update(created.id, {
+    title: 'Updated room in the city centre',
+    price: 210,
+    city: 'Niš',
+    neighborhood: 'Centar',
+    description: 'A refreshed description with details about the updated room.',
+    area: 21,
+    roommates: 2,
+    tags: ['Terasa'],
+    imageUrl: '/updated-room.jpg',
+    userId: 'other@example.com',
+  })
+  assert.equal(edited.id, created.id)
+  assert.equal(edited.createdAt, created.createdAt)
+  assert.equal(edited.userId, firstUser.id, 'Editing must not transfer ownership')
+  assert.equal(edited.imageUrl, '/updated-room.jpg')
+  assert.equal(edited.city, 'Niš')
+  assert.equal(edited.area, 21)
+  assert.deepEqual(edited.tags, ['Terasa'])
+  assert.equal((await listingsApi.list('Updated room in the city centre')).length, 1)
+  assert.equal(
+    (await listingsApi.list()).filter((item) => item.userId === firstUser.id).length,
+    2,
+    'Saving edits must not create duplicate listings',
+  )
+  assert.equal(JSON.parse(storage.get('cimer-listings')).find((item) => item.id === created.id).price, 210)
+  failWrites = true
+  assert.throws(() => listingsApi.update(created.id, { price: 999 }), /Storage full/)
+  failWrites = false
+  assert.equal((await listingsApi.get(created.id)).price, 210, 'Failed edits must retain saved data')
   failWrites = true
   assert.throws(() => listingsApi.remove(created.id), /Storage full/)
   failWrites = false

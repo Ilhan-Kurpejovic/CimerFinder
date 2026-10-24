@@ -35,7 +35,7 @@ export function LoginForm() {
         </h1>
         <p>
           Pronađi sobu u kojoj možeš da budeš svoj.
-          <br />I ljude uz koje se osećaš kao kod kuće.
+          <br />I ljude uz koje se osjećaš kao kod kuće.
         </p>
         <img
           src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85"
@@ -69,13 +69,14 @@ export function LoginForm() {
             <span className="advice-icon">
               <House size={27} />
             </span>
-            <h2>Lepo je videti te.</h2>
+            <h2>Lijepo je vidjeti te.</h2>
             <p>Prijavi se i napravi korak bliže svom novom domu.</p>
             <form
               onSubmit={handleSubmit(async (values) => {
                 try {
                   await login.mutateAsync(values.email)
-                  navigate(params.get('next') === '/post' ? '/post' : '/profile')
+                  const next = params.get('next') || ''
+                  navigate(next === '/post' || /^\/listings\/\d+\/edit$/.test(next) ? next : '/profile')
                 } catch {
                   /* Display the storage error below. */
                 }
@@ -119,7 +120,7 @@ export function LoginForm() {
               </label>
               {login.isError && (
                 <p className="field-error" role="alert">
-                  Prijava nije sačuvana. Proveri prostor pregledača pa pokušaj ponovo.
+                  Prijava nije sačuvana. Provjeri prostor pregledača pa pokušaj ponovo.
                 </p>
               )}
               <Button className="btn btn-primary full-width" type="submit" disabled={login.isPending}>

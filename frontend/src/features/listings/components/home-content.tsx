@@ -41,7 +41,7 @@ export function HomeContent() {
             <p>
               Više od sobe. Više od cimera.
               <br />
-              Mesto gde tvoj novi život počinje — uz prave ljude.
+              Mjesto gdje tvoj novi život počinje — uz prave ljude.
             </p>
             <div className="hero-social">
               <div className="avatar-stack">
@@ -50,7 +50,7 @@ export function HomeContent() {
                 ))}
               </div>
               <div>
-                <strong>Bolje je kad delimo.</strong>
+                <strong>Bolje je kad dijelimo.</strong>
                 <span>Pronađi ljude uz koje si kod kuće.</span>
               </div>
             </div>
@@ -59,11 +59,11 @@ export function HomeContent() {
             <div className="hero-photo">
               <img
                 src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1100&q=90"
-                alt="Svetao dnevni boravak sa udobnom sofom i prirodnim detaljima"
+                alt="Svijetao dnevni boravak sa udobnom sofom i prirodnim detaljima"
               />
               <span className="image-note">
                 <span />
-                Tvoj novi početak je ovde
+                Tvoj novi početak je ovdje
               </span>
             </div>
             <div className="float-card match-card">
@@ -80,7 +80,7 @@ export function HomeContent() {
                 <Check size={17} />
               </span>
               <div>
-                Osećaj kao kod kuće.<small>Od prvog dana.</small>
+                Osjećaj kao kod kuće.<small>Od prvog dana.</small>
               </div>
             </div>
             <span className="hero-doodle" aria-hidden="true">
@@ -110,7 +110,7 @@ export function HomeContent() {
               <label>
                 <MapPin size={20} />
                 <span>
-                  Gde želiš da živiš?
+                  Gdje želiš da živiš?
                   <select value={city} onChange={(e) => setCity(e.target.value)}>
                     <option value="">Izaberi grad</option>
                     {['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'].map((c) => (
@@ -122,7 +122,7 @@ export function HomeContent() {
               <label className="budget-search">
                 <span className="currency-icon">€</span>
                 <span>
-                  Tvoj mesečni budžet
+                  Tvoj mjesečni budžet
                   <select value={budget} onChange={(e) => setBudget(e.target.value)}>
                     <option value="">Izaberi budžet</option>
                     <option value="200">Do 200 €</option>
@@ -157,7 +157,7 @@ export function HomeContent() {
       <section className="container featured-section">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">MOŽDA JE BAŠ OVO TVOJE MESTO</span>
+            <span className="eyebrow">MOŽDA JE BAŠ OVO TVOJE MJESTO</span>
             <h2>
               Novi oglasi, novi počeci<span>.</span>
             </h2>
@@ -185,13 +185,13 @@ export function HomeContent() {
             {[
               {
                 icon: Search,
-                title: 'Pronađi svoje mesto',
-                text: 'Izaberi grad, odredi budžet i otkrij sobe i cimere po svojoj meri.',
+                title: 'Pronađi svoje mjesto',
+                text: 'Izaberi grad, odredi budžet i otkrij sobe i cimere po svojoj mjeri.',
               },
               {
                 icon: Users,
                 title: 'Upoznaj svoje ljude',
-                text: 'Pogledaj profile, navike i interesovanja. Dobar osećaj je važan.',
+                text: 'Pogledaj profile, navike i interesovanja. Dobar osjećaj je važan.',
               },
               {
                 icon: Heart,
@@ -218,7 +218,7 @@ export function HomeContent() {
               <br />
               nečiji novi dom.
             </h2>
-            <p>Objavi oglas besplatno i pronađi svog sledećeg cimera.</p>
+            <p>Objavi oglas besplatno i pronađi svog sljedećeg cimera.</p>
             <Link className="btn btn-primary" to="/post">
               Objavi svoj oglas <ArrowUpRight size={18} />
             </Link>

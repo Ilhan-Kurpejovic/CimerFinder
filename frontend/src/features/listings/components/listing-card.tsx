@@ -67,7 +67,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             </span>
           </div>
           <div className="price">
-            {listing.price} €<small>/ mesečno</small>
+            {listing.price} €<small>/ mjesečno</small>
           </div>
         </div>
       </div>

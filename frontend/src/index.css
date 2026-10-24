@@ -2589,3 +2589,53 @@ input[type='radio'] {
     @apply font-heading;
   }
 }
+
+/* Aligned owner controls give editing priority while keeping deletion distinct. */
+.listing-owner-actions {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.edit-listing-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid var(--soft-purple);
+  border-radius: 8px;
+  background: var(--secondary);
+  color: var(--primary-deep);
+  font-size: 12px;
+  font-weight: 600;
+}
+.edit-listing-link:hover {
+  background: var(--soft-purple);
+}
+.listing-owner-actions .delete-listing-trigger {
+  margin: 0;
+  min-height: 44px;
+  font-size: 11px;
+  padding: 11px 8px;
+}
+.post-form > fieldset {
+  min-width: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.listing-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.listing-update-success {
+  margin-bottom: 22px;
+}
+@media (max-width: 640px) {
+  .listing-form-buttons {
+    flex-direction: column-reverse;
+  }
+}

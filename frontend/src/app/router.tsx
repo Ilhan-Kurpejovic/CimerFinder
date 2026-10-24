@@ -10,6 +10,7 @@ import { Saved } from '@/app/routes/saved'
 import { Post } from '@/app/routes/post'
 import { Login } from '@/app/routes/login'
 import { Profile } from '@/app/routes/profile'
+import { Edit } from '@/app/routes/edit'
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <Home /> },
       { path: '/listings', element: <Listings /> },
       { path: '/listings/:id', element: <Detail /> },
+      { path: '/listings/:id/edit', element: <Edit /> },
       { path: '/roommates', element: <Roommates /> },
       { path: '/saved', element: <Saved /> },
       { path: '/post', element: <Post /> },

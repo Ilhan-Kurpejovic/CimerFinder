@@ -33,20 +33,20 @@ export function ListingsExplorer({
   return (
     <div className="container page-content">
       <div className="page-intro">
-        <span className="eyebrow">{savedOnly ? 'TVOJ UŽI IZBOR' : 'DOBRE PRIČE POČINJU OVDE'}</span>
+        <span className="eyebrow">{savedOnly ? 'TVOJ UŽI IZBOR' : 'DOBRE PRIČE POČINJU OVDJE'}</span>
         <h1>
           {savedOnly
-            ? 'Mesta koja ti se sviđaju.'
+            ? 'Mjesta koja ti se sviđaju.'
             : kind === 'room'
-              ? 'Pronađi mesto za sebe.'
+              ? 'Pronađi mjesto za sebe.'
               : 'Pronađi svoje ljude.'}
           {savedOnly && <Heart size={30} />}
         </h1>
         <p>
           {savedOnly
-            ? 'Sačuvani oglasi na jednom mestu, za lakšu odluku.'
+            ? 'Sačuvani oglasi na jednom mjestu, za lakšu odluku.'
             : kind === 'room'
-              ? 'Soba po tvojoj meri. Cimeri po tvojoj energiji.'
+              ? 'Soba po tvojoj mjeri. Cimeri po tvojoj energiji.'
               : 'Upoznaj buduće cimere, njihove navike i planove.'}
         </p>
       </div>
@@ -57,7 +57,7 @@ export function ListingsExplorer({
             Tvoja pretraga
           </h3>
           <label>
-            Ključna reč
+            Ključna riječ
             <div className="input-icon">
               <Search size={16} />
               <input
@@ -105,7 +105,7 @@ export function ListingsExplorer({
           <div className="filter-note">
             <Heart size={20} />
             <strong>Dom je više od adrese.</strong>
-            <p>Biraj i prostor i ljude uz koje se osećaš dobro.</p>
+            <p>Biraj i prostor i ljude uz koje se osjećaš dobro.</p>
           </div>
         </aside>
         <section className="explorer-results">
@@ -117,7 +117,7 @@ export function ListingsExplorer({
               Poređaj po
               <select value={params.get('sort') || 'newest'} onChange={(e) => update('sort', e.target.value)}>
                 <option value="newest">Najnovijem</option>
-                <option value="price">Najnižoj ceni</option>
+                <option value="price">Najnižoj cijeni</option>
               </select>
             </label>
           </div>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { useCurrentUser } from '@/lib/use-current-user'
 import { useListings } from '../api/use-listings'
 import { ListingsList } from './listings-list'
@@ -42,7 +42,19 @@ export function MyListings() {
           loading={isPending}
           error={isError}
           retry={() => refetch()}
-          renderActions={(item) => <DeleteListingButton listing={item} onDeleted={setDeleted} />}
+          renderActions={(item) => (
+            <div className="listing-owner-actions">
+              <Link
+                className="edit-listing-link"
+                to={`/listings/${item.id}/edit`}
+                aria-label={`Uredi oglas: ${item.title}`}
+              >
+                <Pencil size={16} />
+                Uredi oglas
+              </Link>
+              <DeleteListingButton listing={item} onDeleted={setDeleted} />
+            </div>
+          )}
         />
       )}
     </section>

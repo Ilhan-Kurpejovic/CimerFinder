@@ -38,7 +38,7 @@ export function ListingsList({
       <div className="empty-state">
         <SearchX size={36} />
         <h3>Još nema oglasa za ovaj izbor.</h3>
-        <p>Promeni grad ili povećaj budžet i pokušaj ponovo.</p>
+        <p>Promijeni grad ili povećaj budžet i pokušaj ponovo.</p>
         <Link className="text-link" to="/listings">
           Pogledaj sve oglase →
         </Link>

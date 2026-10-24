@@ -53,7 +53,7 @@ export function DeleteListingButton({
         </p>
         {remove.isError && (
           <p className="field-error" role="alert">
-            Brisanje nije uspelo. Proveri da li si prijavljen/a kao vlasnik oglasa i pokušaj ponovo.
+            Brisanje nije uspjelo. Provjeri da li si prijavljen/a kao vlasnik oglasa i pokušaj ponovo.
           </p>
         )}
         <div className="delete-dialog-actions">

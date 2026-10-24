@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { useListing } from '../api/use-listings'
 export function ListingDetail() {
   const { id } = useParams()
+  const location = useLocation()
   const { data: item, isPending, isError } = useListing(Number(id))
   const [saved, setSaved] = useLocalState<number[]>('cimer-saved', [])
   const [sent, setSent] = useState(false)
@@ -39,13 +40,19 @@ export function ListingDetail() {
   const selected = saved.includes(item.id)
   return (
     <div className="container page-content detail-page">
+      {location.state?.listingUpdated === item.id && (
+        <p className="profile-success listing-update-success" role="status">
+          <Check size={17} />
+          Izmjene oglasa su sačuvane.
+        </p>
+      )}
       <Link className="back-link" to={item.kind === 'room' ? '/listings' : '/roommates'}>
         <ArrowLeft size={16} />
         Nazad na oglase
       </Link>
       <div className="detail-heading">
         <div>
-          <span className="eyebrow">{item.kind === 'room' ? 'TVOJ SLEDEĆI DOM' : 'TVOJ BUDUĆI CIMER'}</span>
+          <span className="eyebrow">{item.kind === 'room' ? 'TVOJ SLJEDEĆI DOM' : 'TVOJ BUDUĆI CIMER'}</span>
           <h1>{item.title}</h1>
           <p className="location">
             <MapPin size={16} />
@@ -98,7 +105,7 @@ export function ListingDetail() {
           <section className="detail-description">
             <h2>{item.kind === 'room' ? 'Malo više o tvom novom domu' : `Upoznaj: ${item.name}`}</h2>
             <p>{item.description}</p>
-            <h3>{item.kind === 'room' ? 'Šta te ovde čeka' : 'Navike i interesovanja'}</h3>
+            <h3>{item.kind === 'room' ? 'Šta te ovdje čeka' : 'Navike i interesovanja'}</h3>
             <div className="amenities">
               {item.tags.map((tag) => (
                 <span key={tag}>
@@ -111,7 +118,7 @@ export function ListingDetail() {
         </div>
         <aside className="contact-card">
           <div className="detail-price">
-            {item.price} €<span>/ mesečno{item.kind === 'roommate' ? ' · budžet' : ''}</span>
+            {item.price} €<span>/ mjesečno{item.kind === 'roommate' ? ' · budžet' : ''}</span>
           </div>
           <p className="muted">
             {item.kind === 'room'
@@ -164,7 +171,7 @@ export function ListingDetail() {
             <h2>Prvi korak je napravljen!</h2>
             <p>Ovo je demo potvrda. Poruka nije poslata, jer aplikacija još nema backend.</p>
             <Button className="btn btn-primary" onClick={() => dialog.current?.close()}>
-              Razumem
+              Razumijem
             </Button>
           </div>
         ) : (
@@ -183,7 +190,7 @@ export function ListingDetail() {
                 required
                 minLength={10}
                 maxLength={1500}
-                defaultValue={`Ćao ${item.name}, sviđa mi se tvoj oglas! Voleo/la bih da se upoznamo i saznam više.`}
+                defaultValue={`Ćao ${item.name}, sviđa mi se tvoj oglas! Želim da se upoznamo i saznam više.`}
               />
             </label>
             <Button className="btn btn-primary full-width" type="submit">

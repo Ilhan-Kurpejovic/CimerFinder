@@ -14,7 +14,7 @@ const schema = z.object({
   name: z.string().trim().min(2, 'Unesi najmanje 2 znaka.').max(60, 'Najviše 60 znakova.'),
   age: z
     .number({ error: 'Unesi svoje godine.' })
-    .int('Unesi ceo broj.')
+    .int('Unesi cijeli broj.')
     .min(18, 'Minimalna starost je 18 godina.')
     .max(100, 'Unesi najviše 100.'),
   occupation: z.string().trim().min(2, 'Unesi svoje zanimanje.').max(100),
@@ -29,6 +29,8 @@ export function ProfileEditor({ user }: { user: User }) {
   const [reading, setReading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [params] = useSearchParams()
+  const next = params.get('next') || ''
+  const returnPath = next === '/post' || /^\/listings\/\d+\/edit$/.test(next) ? next : null
   const {
     register,
     handleSubmit,
@@ -95,7 +97,7 @@ export function ProfileEditor({ user }: { user: User }) {
             <div>
               <label className="btn btn-outline photo-upload">
                 <Camera size={17} />
-                Promeni fotografiju
+                Promijeni fotografiju
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -200,7 +202,7 @@ export function ProfileEditor({ user }: { user: User }) {
         </fieldset>
         {update.isError && (
           <p className="field-error" role="alert">
-            Profil nije sačuvan. Proveri prostor pregledača ili izaberi manju fotografiju i pokušaj ponovo.
+            Profil nije sačuvan. Provjeri prostor pregledača ili izaberi manju fotografiju i pokušaj ponovo.
           </p>
         )}
         {saved && (
@@ -216,16 +218,16 @@ export function ProfileEditor({ user }: { user: User }) {
             onClick={cancel}
             disabled={update.isPending || reading}
           >
-            Odustani od izmena
+            Odustani od izmjena
           </button>
           <Button className="btn btn-primary" type="submit" disabled={update.isPending || reading}>
             <Save size={17} />
             {reading ? 'Učitavam fotografiju...' : update.isPending ? 'Čuvam...' : 'Sačuvaj profil'}
           </Button>
         </div>
-        {params.get('next') === '/post' && profileComplete(user) && (
-          <Link className="btn btn-outline full-width" to="/post">
-            Nastavi na objavljivanje oglasa →
+        {returnPath && profileComplete(user) && (
+          <Link className="btn btn-outline full-width" to={returnPath}>
+            {returnPath === '/post' ? 'Nastavi na objavljivanje oglasa →' : 'Vrati se na uređivanje oglasa →'}
           </Link>
         )}
       </form>

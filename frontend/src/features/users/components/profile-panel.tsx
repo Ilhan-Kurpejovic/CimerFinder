@@ -19,7 +19,7 @@ export function ProfilePanel({ children }: { children: ReactNode }) {
   return (
     <div className="container page-content">
       <div className="page-intro">
-        <span className="eyebrow">TVOJE MESTO U ZAJEDNICI</span>
+        <span className="eyebrow">TVOJE MJESTO U ZAJEDNICI</span>
         <h1>Moj profil.</h1>
         <p>Predstavi sebe jednom — tvoji oglasi preuzimaju ažurne podatke i profilnu fotografiju.</p>
       </div>

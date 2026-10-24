@@ -20,3 +20,9 @@ Unsplash interior photographs, Pravatar profile photos, Lucide icons. CSS house 
 
 ## Profile and account experience
 The top-right avatar opens links to the profile, personal listings and logout. A two-column profile page shows saved public information beside a labeled editor; it stacks on mobile. Upload preview, reset, pending, error and success states distinguish unsaved changes from the saved profile. The public author information uses current profile data, while room photographs remain property-specific. A local SVG placeholder replaces unrelated mock portraits for new users.
+
+## Language
+All product copy uses Serbian Latin in the Ijekavian form, including validation, accessibility labels and demo listing text. Exact legacy seed copy is localized when read; user-authored profile and listing text is preserved.
+
+## Listing owner actions
+Place Uredi oglas and Obriši oglas in an aligned action row directly below each personal listing card. Use pale purple and a pencil icon to give editing visual priority; keep deletion in a quieter bordered style with destructive text. Both controls have at least 44 px targets. The editor reuses the publishing form, shows the existing photo, includes cancellation and confirms a successful save on the details page.
