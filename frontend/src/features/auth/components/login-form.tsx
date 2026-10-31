@@ -6,26 +6,63 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useCurrentUser } from '@/lib/use-current-user'
-import { signOut } from '@/lib/profile-store'
-import { useSignIn } from '../api/use-auth'
-const schema = z.object({
-  email: z.email('Unesi ispravnu email adresu.'),
-  password: z.string().min(6, 'Lozinka treba da ima najmanje 6 znakova.'),
-})
+import { apiMessage } from '@/lib/api-client'
+import { useCurrentUserState } from '@/lib/use-current-user'
+import { SignOutDialog } from '@/components/layout/sign-out-dialog'
+import { SessionStatus } from '@/components/layout/session-status'
+import { useRegister, useSignIn } from '../api/use-auth'
 export function LoginForm() {
-  const user = useCurrentUser()
+  const { user, isPending, isError, error, refetch } = useCurrentUserState()
+  const [confirmSignOut, setConfirmSignOut] = useState(false)
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const signingUp = mode === 'register'
   const login = useSignIn()
+  const signup = useRegister()
+  const mutation = signingUp ? signup : login
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const schema = z
+    .object({
+      email: z.email('Unesi ispravnu email adresu.'),
+      password: z.string().min(1, 'Unesi lozinku.'),
+      displayName: z.string().optional(),
+    })
+    .superRefine((values, ctx) => {
+      if (
+        signingUp &&
+        (!values.displayName || values.displayName.trim().length < 2 || values.displayName.trim().length > 60)
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: ['displayName'],
+          message: 'Ime treba da ima između 2 i 60 znakova.',
+        })
+      if (signingUp && values.password.length < 8)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['password'],
+          message: 'Lozinka treba da ima najmanje 8 znakova.',
+        })
+      if (new TextEncoder().encode(values.password).length > 72)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['password'],
+          message: 'Lozinka je predugačka. Koristi najviše 72 UTF-8 bajta.',
+        })
+    })
   const {
     register,
     handleSubmit,
+    reset,
+    getValues,
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) })
+  if (isPending || isError)
+    return <SessionStatus error={isError ? error : undefined} retry={() => refetch()} />
   return (
     <section className="container login-page">
+      <SignOutDialog open={confirmSignOut} onClose={() => setConfirmSignOut(false)} />
       <div className="login-story">
         <span className="eyebrow">TVOJI LJUDI TE ČEKAJU</span>
         <h1>
@@ -53,85 +90,136 @@ export function LoginForm() {
               <House size={28} />
             </span>
             <h2>Ćao, {user.name}!</h2>
-            <p>Prijavljen/a si u demo režimu.</p>
-            <Link className="btn btn-primary" to="/listings">
-              Istraži oglase <ArrowUpRight size={18} />
+            <p>Tvoj profil i oglasi čekaju te na jednom mjestu.</p>
+            <Link className="btn btn-primary" to="/profile">
+              Moj profil <ArrowUpRight size={18} />
             </Link>
-            <Link className="text-link" to="/profile">
-              Moj profil
-            </Link>
-            <button className="text-link" onClick={signOut}>
+            <button className="text-link" onClick={() => setConfirmSignOut(true)}>
               Odjavi se
             </button>
           </div>
         ) : (
           <>
-            <span className="advice-icon">
-              <House size={27} />
-            </span>
-            <h2>Lijepo je vidjeti te.</h2>
-            <p>Prijavi se i napravi korak bliže svom novom domu.</p>
+            <div className="auth-tabs" aria-label="Prijava ili registracija">
+              {(['login', 'register'] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={mode === value}
+                  className={mode === value ? 'active' : ''}
+                  disabled={mutation.isPending}
+                  onClick={() => {
+                    setMode(value)
+                    reset({ ...getValues(), password: '' })
+                    login.reset()
+                    signup.reset()
+                  }}
+                >
+                  {value === 'login' ? 'Prijava' : 'Registracija'}
+                </button>
+              ))}
+            </div>
+            <h2>{signingUp ? 'Napravi svoj nalog.' : 'Lijepo je vidjeti te.'}</h2>
+            <p>
+              {signingUp
+                ? 'Predstavi se i započni svoju novu priču.'
+                : 'Prijavi se i napravi korak bliže svom novom domu.'}
+            </p>
             <form
+              noValidate
               onSubmit={handleSubmit(async (values) => {
                 try {
-                  await login.mutateAsync(values.email)
+                  if (signingUp)
+                    await signup.mutateAsync({
+                      email: values.email,
+                      password: values.password,
+                      displayName: values.displayName?.trim() || '',
+                    })
+                  else await login.mutateAsync({ email: values.email, password: values.password })
                   const next = params.get('next') || ''
-                  navigate(next === '/post' || /^\/listings\/\d+\/edit$/.test(next) ? next : '/profile')
+                  navigate(
+                    ['/post', '/profile', '/my-listings', '/messages'].includes(next) ||
+                      /^\/listings\/\d+(?:\/edit)?$/.test(next)
+                      ? next
+                      : '/',
+                    {
+                      replace: true,
+                    },
+                  )
                 } catch {
-                  /* Display the storage error below. */
+                  /* The request error is shown below. */
                 }
               })}
-              noValidate
             >
-              <label>
-                Email adresa
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="tvoje.ime@email.com"
-                  {...register('email')}
-                  aria-invalid={!!errors.email}
-                />
-                {errors.email && (
-                  <small className="field-error" role="alert">
-                    {errors.email.message}
-                  </small>
+              <fieldset disabled={mutation.isPending}>
+                {signingUp && (
+                  <label>
+                    Ime i prezime
+                    <Input
+                      autoComplete="name"
+                      maxLength={60}
+                      {...register('displayName')}
+                      aria-invalid={!!errors.displayName}
+                    />
+                    {errors.displayName && (
+                      <small className="field-error" role="alert">
+                        {errors.displayName.message}
+                      </small>
+                    )}
+                  </label>
                 )}
-              </label>
-              <label>
-                Lozinka
-                <div className="password-field">
+                <label>
+                  Email adresa
                   <Input
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    placeholder="Najmanje 6 znakova"
-                    {...register('password')}
-                    aria-invalid={!!errors.password}
+                    type="email"
+                    autoComplete="email"
+                    placeholder="tvoje.ime@email.com"
+                    {...register('email')}
+                    aria-invalid={!!errors.email}
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? 'Sakrij' : 'Prikaži'}
-                  </button>
-                </div>
-                {errors.password && (
-                  <small className="field-error" role="alert">
-                    {errors.password.message}
-                  </small>
+                  {errors.email && (
+                    <small className="field-error" role="alert">
+                      {errors.email.message}
+                    </small>
+                  )}
+                </label>
+                <label>
+                  Lozinka
+                  <div className="password-field">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete={signingUp ? 'new-password' : 'current-password'}
+                      placeholder={signingUp ? 'Najmanje 8 znakova' : 'Tvoja lozinka'}
+                      {...register('password')}
+                      aria-invalid={!!errors.password}
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? 'Sakrij' : 'Prikaži'}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <small className="field-error" role="alert">
+                      {errors.password.message}
+                    </small>
+                  )}
+                </label>
+                {mutation.isError && (
+                  <p className="field-error" role="alert">
+                    {apiMessage(mutation.error)}
+                  </p>
                 )}
-              </label>
-              {login.isError && (
-                <p className="field-error" role="alert">
-                  Prijava nije sačuvana. Provjeri prostor pregledača pa pokušaj ponovo.
-                </p>
-              )}
-              <Button className="btn btn-primary full-width" type="submit" disabled={login.isPending}>
-                {login.isPending ? 'Prijavljujem...' : 'Prijavi se'} <ArrowUpRight size={18} />
-              </Button>
+                <Button className="btn btn-primary full-width" type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending ? 'Sačekaj...' : signingUp ? 'Napravi nalog' : 'Prijavi se'}{' '}
+                  <ArrowUpRight size={18} />
+                </Button>
+              </fieldset>
             </form>
             <div className="demo-box">
-              <strong>Isprobaj bez registracije</strong>
+              <strong>{signingUp ? 'Tvoj profil, tvoji oglasi' : 'Prvi put ovdje?'}</strong>
               <p>
-                Unesi bilo koju ispravnu email adresu i lozinku od najmanje 6 znakova. Ovo je demo prijava;
-                lozinka se ne čuva.
+                {signingUp
+                  ? 'Nakon registracije dopuni profil da bi mogao/la objaviti svoj prvi oglas.'
+                  : 'Izaberi Registracija da napraviš nalog. Raniji lokalni demo profili nijesu registrovani nalozi.'}
               </p>
             </div>
             <Link className="text-link" to="/listings">

@@ -1,4 +1,6 @@
+export type ListingStatus = 'active' | 'paused' | 'matched'
 export type Listing = {
+  status?: ListingStatus
   id: number
   userId?: string
   authorBio?: string
@@ -8,11 +10,12 @@ export type Listing = {
   city: string
   neighborhood: string
   imageUrl: string
+  imageUrls?: string[]
   createdAt: string
   area: number
   roommates: number
   name: string
-  age: number
+  age: number | null
   occupation: string
   avatar: string
   tags: string[]

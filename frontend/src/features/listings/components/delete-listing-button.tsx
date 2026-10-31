@@ -1,3 +1,4 @@
+import { apiMessage } from '@/lib/api-client'
 import { useRef } from 'react'
 import { Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -53,7 +54,7 @@ export function DeleteListingButton({
         </p>
         {remove.isError && (
           <p className="field-error" role="alert">
-            Brisanje nije uspjelo. Provjeri da li si prijavljen/a kao vlasnik oglasa i pokušaj ponovo.
+            {apiMessage(remove.error)}
           </p>
         )}
         <div className="delete-dialog-actions">

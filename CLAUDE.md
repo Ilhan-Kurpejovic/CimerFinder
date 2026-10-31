@@ -1,10 +1,10 @@
 # CimerFinder
 
-CimerFinder helps people find rooms and compatible roommates in Serbian cities. The current version is a browser-local React demo without a backend.
+CimerFinder helps people find rooms and compatible roommates in Serbian cities. The React application is connected to FastAPI and SQLite for authentication, profiles, listings and photo uploads. Favorites are stored per account in SQL and private conversations and messages are stored in SQL.
 
 This is a monorepo: one repository for the whole app.
 - `frontend/`: React app (Workshop 3). Details in @frontend/CLAUDE.md
-- `backend/`: API, database and auth (next workshop)
+- `backend/`: FastAPI, SQLite/Alembic, JWT authentication, profiles and room/roommate listings; connected frontend
 - `docs/entities.md`: entities and the API contract shared by frontend and backend
 
 ## Language

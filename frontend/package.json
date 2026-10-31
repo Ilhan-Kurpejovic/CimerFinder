@@ -10,7 +10,8 @@
     "check:mock": "node scripts/check-mock-api.mjs",
     "lint": "oxlint && node scripts/check-boundaries.mjs",
     "format": "prettier --write src",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:api": "node scripts/check-api.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

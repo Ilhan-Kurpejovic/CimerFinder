@@ -1,8 +1,10 @@
+import { cities } from '@/lib/cities'
 import { useSearchParams } from 'react-router'
 import { Heart, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useLocalState } from '@/lib/use-local-state'
-import { useListings } from '../api/use-listings'
+import { useSavedListings } from '@/lib/use-saved-listings'
+import { useListingsPage } from '../api/use-listings'
 import { ListingsList } from './listings-list'
+import { ListingPagination } from './listing-pagination'
 export function ListingsExplorer({
   kind = 'room',
   savedOnly = false,
@@ -11,25 +13,29 @@ export function ListingsExplorer({
   savedOnly?: boolean
 }) {
   const [params, setParams] = useSearchParams()
-  const [saved] = useLocalState<number[]>('cimer-saved', [])
-  const { data = [], isPending, isError, refetch } = useListings(params.get('q') || '')
+  const [saved, , favorites] = useSavedListings()
+  const page = Math.max(1, Math.trunc(Number(params.get('page')) || 1))
+  const city = params.get('city') || '',
+    budget = params.get('budget') || ''
+  const { data, isPending, isError, refetch } = useListingsPage(params.get('q') || '', {
+    page,
+    size: 9,
+    kind: savedOnly ? undefined : kind,
+    city,
+    maxPrice: budget ? Number(budget) : undefined,
+    petFriendly: params.has('pet'),
+    sort: params.get('sort') === 'price' ? 'price' : 'newest',
+    ids: savedOnly && !favorites.signedIn ? saved : undefined,
+    favorites: savedOnly && favorites.signedIn,
+  })
+  const items = data?.items || []
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
     else next.delete(key)
+    if (key !== 'page') next.delete('page')
     setParams(next, { replace: true })
   }
-  const city = params.get('city') || '',
-    budget = params.get('budget') || ''
-  let items = data.filter(
-    (l) =>
-      (savedOnly ? saved.includes(l.id) : l.kind === kind) &&
-      (!city || l.city === city) &&
-      (!budget || l.price <= Number(budget)) &&
-      (!params.get('pet') || l.tags.includes('Pet friendly')),
-  )
-  if (params.get('sort') === 'price') items = [...items].sort((a, b) => a.price - b.price)
-  else items = [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
   return (
     <div className="container page-content">
       <div className="page-intro">
@@ -44,12 +50,19 @@ export function ListingsExplorer({
         </h1>
         <p>
           {savedOnly
-            ? 'Sačuvani oglasi na jednom mjestu, za lakšu odluku.'
+            ? favorites.signedIn
+              ? 'Tvoji omiljeni oglasi, dostupni sa svakog uređaja.'
+              : 'Oglasi sačuvani na ovom uređaju. Prijavi se za čuvanje na svom nalogu.'
             : kind === 'room'
               ? 'Soba po tvojoj mjeri. Cimeri po tvojoj energiji.'
               : 'Upoznaj buduće cimere, njihove navike i planove.'}
         </p>
       </div>
+      {savedOnly && favorites.error && (
+        <p className="field-error" role="alert">
+          {favorites.error} <button onClick={favorites.retry}>Pokušaj ponovo</button>
+        </p>
+      )}
       <div className="explorer-layout">
         <aside className="filters">
           <h3>
@@ -63,7 +76,7 @@ export function ListingsExplorer({
               <input
                 value={params.get('q') || ''}
                 onChange={(e) => update('q', e.target.value)}
-                placeholder="Naselje, ime, oglas..."
+                placeholder="Naselje ili naslov oglasa..."
               />
             </div>
           </label>
@@ -71,7 +84,8 @@ export function ListingsExplorer({
             Grad
             <select value={city} onChange={(e) => update('city', e.target.value)}>
               <option value="">Svi gradovi</option>
-              {['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'].map((c) => (
+              {city && !cities.includes(city) && <option value={city}>{city}</option>}
+              {cities.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
@@ -87,7 +101,7 @@ export function ListingsExplorer({
                 value={budget}
                 onChange={(e) => update('budget', e.target.value)}
               />
-              <span>€ / mes.</span>
+              <span>€ / mjes.</span>
             </div>
           </label>
           <label className="check-label">
@@ -111,7 +125,8 @@ export function ListingsExplorer({
         <section className="explorer-results">
           <div className="results-bar">
             <span>
-              <strong>{items.length}</strong> {items.length === 1 ? 'oglas' : 'oglasa'} za tvoj novi početak
+              <strong>{data?.total || 0}</strong> {data?.total === 1 ? 'oglas' : 'oglasa'} za tvoj novi
+              početak
             </span>
             <label className="sort-label">
               Poređaj po
@@ -122,6 +137,13 @@ export function ListingsExplorer({
             </label>
           </div>
           <ListingsList items={items} loading={isPending} error={isError} retry={() => refetch()} />
+          {!isPending && !isError && (
+            <ListingPagination
+              page={page}
+              pages={data?.pages || 0}
+              onChange={(value) => update('page', String(value))}
+            />
+          )}
         </section>
       </div>
     </div>

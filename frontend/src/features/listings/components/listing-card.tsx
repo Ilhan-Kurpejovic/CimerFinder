@@ -1,9 +1,18 @@
+import { RoommateCard } from './roommate-card'
+import { listingStatusLabels } from './listing-status-control'
 import { Link } from 'react-router'
 import { ArrowUpRight, Heart, MapPin, Maximize, Users } from 'lucide-react'
-import { useLocalState } from '@/lib/use-local-state'
+import { useSavedListings } from '@/lib/use-saved-listings'
 import type { Listing } from '../types'
 export function ListingCard({ listing }: { listing: Listing }) {
-  const [saved, setSaved] = useLocalState<number[]>('cimer-saved', [])
+  return listing.kind === 'roommate' ? (
+    <RoommateCard listing={listing} />
+  ) : (
+    <RoomListingCard listing={listing} />
+  )
+}
+function RoomListingCard({ listing }: { listing: Listing }) {
+  const [saved, toggleSaved, favorites] = useSavedListings()
   const selected = saved.includes(listing.id)
   return (
     <article className="listing-card">
@@ -20,14 +29,26 @@ export function ListingCard({ listing }: { listing: Listing }) {
           className={`save-button ${selected ? 'is-saved' : ''}`}
           aria-label={selected ? 'Ukloni iz sačuvanih' : 'Sačuvaj oglas'}
           aria-pressed={selected}
-          onClick={() =>
-            setSaved(selected ? saved.filter((id) => id !== listing.id) : [...saved, listing.id])
-          }
+          disabled={favorites.pending || !!favorites.error}
+          onClick={() => toggleSaved(listing.id)}
         >
           <Heart size={18} fill={selected ? 'currentColor' : 'none'} />
         </button>
       </div>
+      {favorites.error && (
+        <p className="field-error" role="alert">
+          {favorites.error}{' '}
+          <button type="button" onClick={favorites.retry}>
+            Pokušaj ponovo
+          </button>
+        </p>
+      )}
       <div className="card-body">
+        {listing.status && listing.status !== 'active' && (
+          <span className={'listing-status-badge status-' + listing.status}>
+            {listingStatusLabels[listing.status]}
+          </span>
+        )}
         <div className="location">
           <MapPin size={13} />
           {listing.city} · {listing.neighborhood}

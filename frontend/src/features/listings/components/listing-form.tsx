@@ -1,26 +1,41 @@
-import { useState } from 'react'
+import { roommateTags, personalTags } from '../lib/roommate-options'
+import { useImageSelection } from '@/lib/use-image-selection'
+import { ImagePicker } from '@/components/media/image-picker'
+import { cities } from '@/lib/cities'
+import { apiMessage } from '@/lib/api-client'
+import { SessionStatus } from '@/components/layout/session-status'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router'
-import { ArrowLeft, ArrowUpRight, ImagePlus, Heart, Check } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Heart, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useCurrentUser } from '@/lib/use-current-user'
-import { defaultAvatar, profileComplete } from '@/lib/profile-store'
+import { useCurrentUserState } from '@/lib/use-current-user'
+import { profileComplete } from '@/lib/profile-store'
 import { useCreateListing, useUpdateListing } from '../api/use-listings'
 import type { Listing } from '../types'
-const schema = z.object({
-  kind: z.enum(['room', 'roommate']),
-  title: z.string().trim().min(8, 'Unesi naslov sa najmanje 8 znakova.').max(90, 'Najviše 90 znakova.'),
-  city: z.string().min(1, 'Izaberi grad.'),
-  neighborhood: z.string().trim().min(2, 'Unesi naselje.'),
-  price: z.number().min(1, 'Unesi iznos veći od 0.').max(5000, 'Maksimalni iznos je 5.000 €.'),
-  area: z.number().min(1, 'Unesi površinu.').max(500),
-  roommates: z.number().min(1).max(10),
-  description: z.string().trim().min(40, 'Napiši najmanje 40 znakova.').max(3000),
-})
+const schema = z
+  .object({
+    kind: z.enum(['room', 'roommate']),
+    title: z.string().trim().min(8, 'Unesi naslov sa najmanje 8 znakova.').max(90, 'Najviše 90 znakova.'),
+    city: z.string().min(1, 'Izaberi grad.'),
+    neighborhood: z.string().trim().max(100, 'Najviše 100 znakova.'),
+    price: z.number().min(1, 'Unesi iznos veći od 0.').max(5000, 'Maksimalni iznos je 5.000 €.'),
+    area: z.number({ error: 'Unesi površinu.' }).int('Unesi cijeli broj.').min(1, 'Unesi površinu.').max(500),
+    roommates: z.number({ error: 'Unesi broj cimera.' }).int('Unesi cijeli broj.').min(1).max(10),
+    description: z.string().trim().min(40, 'Napiši najmanje 40 znakova.').max(3000),
+  })
+  .superRefine((values, context) => {
+    if (values.neighborhood.length < 2 && (values.kind === 'room' || values.neighborhood.length > 0))
+      context.addIssue({
+        code: 'custom',
+        path: ['neighborhood'],
+        message: 'Unesi najmanje 2 znaka za naselje.',
+      })
+  })
 type Fields = z.infer<typeof schema>
 const tags = ['Namješteno', 'Pet friendly', 'Terasa', 'Wi-Fi', 'Rad od kuće', 'Ne pušim', 'Blizu fakulteta']
 export function ListingForm({ listing }: { listing?: Listing }) {
@@ -29,16 +44,27 @@ export function ListingForm({ listing }: { listing?: Listing }) {
   const update = useUpdateListing()
   const editing = !!listing
   const returnPath = listing ? `/listings/${listing.id}/edit` : '/post'
-  const user = useCurrentUser()
+  const {
+    user,
+    isPending: sessionPending,
+    isError: sessionError,
+    error: sessionErrorValue,
+    refetch: retrySession,
+  } = useCurrentUserState()
   const [selected, setSelected] = useState<string[]>(listing?.tags ?? ['Wi-Fi'])
-  const [image, setImage] = useState(listing?.kind === 'room' ? listing.imageUrl : '')
-  const [readingImage, setReadingImage] = useState(false)
-  const busy = create.isPending || update.isPending || readingImage
-  const [imageError, setImageError] = useState('')
+  const photos = useImageSelection(
+    listing?.kind === 'room'
+      ? listing.imageUrls || (listing.imageUrl === '/room-placeholder.svg' ? [] : [listing.imageUrl])
+      : [],
+    'listing',
+    8,
+  )
+  const busy = create.isPending || update.isPending || photos.busy
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<Fields>({
     resolver: zodResolver(schema),
@@ -55,6 +81,11 @@ export function ListingForm({ listing }: { listing?: Listing }) {
         }
       : { kind: 'room', roommates: 1, area: 15 },
   })
+  const isRoommate = watch('kind') === 'roommate'
+  const chosenTags = isRoommate ? personalTags(selected) : selected
+  useEffect(() => {
+    if (isRoommate) setValue('area', listing?.area || 15)
+  }, [isRoommate, listing?.area, setValue])
   const fieldError = (field: keyof Fields) =>
     errors[field] ? (
       <small className="field-error" role="alert">
@@ -64,12 +95,14 @@ export function ListingForm({ listing }: { listing?: Listing }) {
   const submit = handleSubmit(async (values) => {
     if (!profileComplete(user)) return
     try {
-      const imageUrl =
-        values.kind === 'room'
-          ? image ||
-            'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=85'
-          : defaultAvatar
-      const changes = { ...values, tags: selected, imageUrl }
+      const imageUrls = values.kind === 'room' ? photos.values : []
+      const changes = {
+        ...values,
+        neighborhood: values.neighborhood.trim() || 'Po dogovoru',
+        tags: chosenTags,
+        imageUrl: imageUrls[0] || '',
+        imageUrls,
+      }
       const item = listing
         ? await update.mutateAsync({ id: listing.id, changes })
         : await create.mutateAsync({
@@ -80,11 +113,14 @@ export function ListingForm({ listing }: { listing?: Listing }) {
             occupation: user.occupation,
             avatar: user.avatar,
           })
+      photos.commit(item.kind === 'room' ? item.imageUrls || [] : [])
       navigate(`/listings/${item.id}`, { state: { listingUpdated: editing ? item.id : null } })
     } catch {
       /* The mutation exposes a recoverable error below. */
     }
   })
+  if (sessionPending || sessionError)
+    return <SessionStatus error={sessionError ? sessionErrorValue : undefined} retry={() => retrySession()} />
   if (!user)
     return (
       <div className="container page-content">
@@ -149,14 +185,38 @@ export function ListingForm({ listing }: { listing?: Listing }) {
                 </label>
               </div>
             </section>
+            {isRoommate && (
+              <div className="roommate-form-profile">
+                <img src={user.avatar} alt={'Profilna fotografija: ' + user.name} />
+                <div>
+                  <span className="eyebrow">OVO SI TI</span>
+                  <h3>
+                    {user.name}, {user.age}
+                  </h3>
+                  <p>
+                    {user.occupation}
+                    {user.city ? ' · ' + user.city : ''}
+                  </p>
+                  {user.bio && <p className="roommate-form-bio">{user.bio}</p>}
+                  <Link className="text-link" to={`/profile?next=${returnPath}`}>
+                    Uredi fotografiju i podatke na profilu →
+                  </Link>
+                </div>
+              </div>
+            )}
             <section>
               <h2>
-                <span>02</span>Detalji koji znače
+                <span>02</span>
+                {isRoommate ? 'Kakav dom i cimera tražiš?' : 'Detalji koji znače'}
               </h2>
               <label>
                 Naslov oglasa
                 <Input
-                  placeholder="Npr. Svijetla soba i opuštena ekipa na Vračaru"
+                  placeholder={
+                    isRoommate
+                      ? 'Npr. Tražim miran dom i cimera za zajednički stan'
+                      : 'Npr. Svijetla soba i opuštena ekipa na Vračaru'
+                  }
                   {...register('title')}
                   aria-invalid={!!errors.title}
                 />
@@ -167,19 +227,25 @@ export function ListingForm({ listing }: { listing?: Listing }) {
                   Grad
                   <select {...register('city')}>
                     <option value="">Izaberi grad</option>
-                    {['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'].map((c) => (
+                    {listing?.city && !cities.includes(listing.city) && (
+                      <option value={listing.city}>{listing.city}</option>
+                    )}
+                    {cities.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
                   {fieldError('city')}
                 </label>
                 <label>
-                  Naselje
-                  <Input placeholder="Npr. Vračar" {...register('neighborhood')} />
+                  {isRoommate ? 'Željeno naselje (opciono)' : 'Naselje'}
+                  <Input
+                    placeholder={isRoommate ? 'Otvoren/a sam za dogovor' : 'Npr. Vračar'}
+                    {...register('neighborhood')}
+                  />
                   {fieldError('neighborhood')}
                 </label>
                 <label>
-                  {watch('kind') === 'room' ? 'Mjesečna kirija (€)' : 'Mjesečni budžet (€)'}
+                  {isRoommate ? 'Budžet za moj dio stanarine (€)' : 'Mjesečna kirija (€)'}
                   <Input
                     type="number"
                     min="1"
@@ -188,121 +254,82 @@ export function ListingForm({ listing }: { listing?: Listing }) {
                   />
                   {fieldError('price')}
                 </label>
+                {!isRoommate && (
+                  <label>
+                    Površina sobe (m²)
+                    <Input type="number" min="1" {...register('area', { valueAsNumber: true })} />
+                    {fieldError('area')}
+                  </label>
+                )}
                 <label>
-                  {watch('kind') === 'room' ? 'Površina sobe (m²)' : 'Željena površina sobe (m²)'}
-                  <Input type="number" min="1" {...register('area', { valueAsNumber: true })} />
-                  {fieldError('area')}
-                </label>
-                <label>
-                  Broj cimera
+                  {isRoommate ? 'Koliko cimera tražiš?' : 'Broj cimera'}
                   <Input type="number" min="1" max="10" {...register('roommates', { valueAsNumber: true })} />
                   {fieldError('roommates')}
                 </label>
               </div>
               <label>
-                Opiši svoj prostor i idealnog cimera
+                {isRoommate ? 'Kako zamišljaš zajednički dom?' : 'Opiši svoj prostor i idealnog cimera'}
                 <Textarea
                   rows={5}
-                  placeholder="Kakva je atmosfera? Šta voliš, šta ti je važno i kada je moguće useljenje?"
+                  placeholder={
+                    isRoommate
+                      ? 'Kakvog cimera tražiš, kada želiš da se useliš i šta ti je važno pri zajedničkom životu? Tvoja biografija se već preuzima sa profila.'
+                      : 'Kakva je atmosfera? Šta voliš, šta ti je važno i kada je moguće useljenje?'
+                  }
                   {...register('description')}
                 />
                 {fieldError('description')}
               </label>
-              <label>Šta najbolje opisuje tvoj oglas?</label>
+              <label>{isRoommate ? 'Tvoje navike i način života' : 'Šta najbolje opisuje tvoj oglas?'}</label>
               <div className="tag-options">
-                {[...new Set([...tags, ...selected])].map((tag) => (
+                {[...new Set([...(isRoommate ? roommateTags : tags), ...chosenTags])].map((tag) => (
                   <button
                     type="button"
                     key={tag}
-                    aria-pressed={selected.includes(tag)}
-                    className={selected.includes(tag) ? 'selected' : ''}
+                    aria-pressed={chosenTags.includes(tag)}
+                    className={chosenTags.includes(tag) ? 'selected' : ''}
                     onClick={() =>
                       setSelected(
                         selected.includes(tag) ? selected.filter((t) => t !== tag) : [...selected, tag],
                       )
                     }
                   >
-                    {selected.includes(tag) && <Check size={13} />}
+                    {chosenTags.includes(tag) && <Check size={13} />}
                     {tag}
                   </button>
                 ))}
               </div>
-              {watch('kind') === 'room' ? (
-                <>
-                  <label className="upload-zone">
-                    <ImagePlus size={26} />
-                    <strong>{image ? 'Promijeni fotografiju' : 'Dodaj fotografiju'}</strong>
-                    <span>JPG, PNG ili WebP · do 2 MB</span>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        e.target.value = ''
-                        if (!file) return
-                        if (
-                          file.size > 2 * 1024 * 1024 ||
-                          !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-                        ) {
-                          setImageError('Izaberi JPG, PNG ili WebP do 2 MB.')
-                          return
-                        }
-                        setImageError('')
-                        setReadingImage(true)
-                        const reader = new FileReader()
-                        reader.onload = () => {
-                          setImage(String(reader.result))
-                          setReadingImage(false)
-                        }
-                        reader.onerror = () => {
-                          setImageError('Fotografija nije učitana. Pokušaj ponovo.')
-                          setReadingImage(false)
-                        }
-                        reader.readAsDataURL(file)
-                      }}
-                    />
-                  </label>
-                  {image && <img className="upload-preview" src={image} alt="Pregled izabrane fotografije" />}
-                  {imageError && (
-                    <small className="field-error" role="alert">
-                      {imageError}
-                    </small>
-                  )}
-                  <small className="muted">Bez fotografije koristi se ilustrativna demo fotografija.</small>
-                </>
-              ) : (
-                <div className="author-preview">
-                  <img src={user.avatar} alt={user.name} />
-                  <p>Ovaj oglas koristi tvoju profilnu fotografiju. Možeš je promijeniti na profilu.</p>
-                </div>
+              {!isRoommate && (
+                <ImagePicker selection={photos} disabled={create.isPending || update.isPending} />
               )}
             </section>
-            <section>
-              <h2>
-                <span>03</span>Upoznajmo se
-              </h2>
-              <div className="author-preview">
-                <img src={user.avatar} alt={user.name} />
-                <div>
-                  <strong>
-                    {user.name}, {user.age}
-                  </strong>
-                  <p>{user.occupation}</p>
-                  <Link className="text-link" to={`/profile?next=${returnPath}`}>
-                    Uredi podatke na profilu →
-                  </Link>
+            {!isRoommate && (
+              <section>
+                <h2>
+                  <span>03</span>Upoznajmo se
+                </h2>
+                <div className="author-preview">
+                  <img src={user.avatar} alt={user.name} />
+                  <div>
+                    <strong>
+                      {user.name}, {user.age}
+                    </strong>
+                    <p>{user.occupation}</p>
+                    <Link className="text-link" to={`/profile?next=${returnPath}`}>
+                      Uredi podatke na profilu →
+                    </Link>
+                  </div>
                 </div>
-              </div>
-              <p className="muted">Podaci o autoru se automatski preuzimaju sa profila.</p>
-            </section>
+                <p className="muted">Podaci o autoru se automatski preuzimaju sa profila.</p>
+              </section>
+            )}
             {(create.isError || update.isError) && (
               <p className="field-error" role="alert">
-                Čuvanje nije uspjelo. Provjeri da li si vlasnik oglasa i ima li dovoljno prostora u
-                pregledaču, pa pokušaj ponovo.
+                {apiMessage(update.error || create.error)}
               </p>
             )}
             <div className="form-submit">
-              <p>Demo oglas čuva se samo u ovom pregledaču.</p>
+              <p>Oglas se čuva na tvom nalogu.</p>
               <div className="listing-form-buttons">
                 {listing && (
                   <button
@@ -315,13 +342,7 @@ export function ListingForm({ listing }: { listing?: Listing }) {
                   </button>
                 )}
                 <Button className="btn btn-primary" type="submit" disabled={busy}>
-                  {readingImage
-                    ? 'Učitavam fotografiju...'
-                    : busy
-                      ? 'Čuvam...'
-                      : editing
-                        ? 'Sačuvaj izmjene'
-                        : 'Objavi oglas'}
+                  {busy ? 'Čuvam...' : editing ? 'Sačuvaj izmjene' : 'Objavi oglas'}
                   <ArrowUpRight size={18} />
                 </Button>
               </div>
@@ -337,11 +358,13 @@ export function ListingForm({ listing }: { listing?: Listing }) {
           <ul>
             <li>
               <Check size={17} />
-              Dodaj jasnu fotografiju prostora.
+              {isRoommate
+                ? 'Dodaj profilnu fotografiju kroz Moj profil.'
+                : 'Dodaj jasnu fotografiju prostora.'}
             </li>
             <li>
               <Check size={17} />
-              Napiši šta je uključeno u cijenu.
+              {isRoommate ? 'Navedi svoj budžet i željeni grad.' : 'Napiši šta je uključeno u cijenu.'}
             </li>
             <li>
               <Check size={17} />

@@ -1,3 +1,4 @@
+import { cities } from '@/lib/cities'
 import { Link, useNavigate } from 'react-router'
 import {
   ArrowRight,
@@ -18,7 +19,7 @@ export function HomeContent() {
   const [kind, setKind] = useState('room')
   const [city, setCity] = useState('')
   const [budget, setBudget] = useState('')
-  const { data = [], isPending, isError, refetch } = useListings()
+  const { data = [], isPending, isError, refetch } = useListings('', { kind: 'room', size: 3 })
   return (
     <>
       <section className="hero">
@@ -113,7 +114,7 @@ export function HomeContent() {
                   Gdje želiš da živiš?
                   <select value={city} onChange={(e) => setCity(e.target.value)}>
                     <option value="">Izaberi grad</option>
-                    {['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'].map((c) => (
+                    {cities.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>

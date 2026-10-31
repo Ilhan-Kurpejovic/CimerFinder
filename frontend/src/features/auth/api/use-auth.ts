@@ -1,10 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { signIn } from '@/lib/profile-store'
-import { delay } from '@/lib/mock-db'
+import { useMutation } from '@tanstack/react-query'
+import { authApi } from './auth-api'
 export function useSignIn() {
-  const client = useQueryClient()
-  return useMutation({
-    mutationFn: (email: string) => delay(signIn(email)),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['listings'] }),
-  })
+  return useMutation({ mutationFn: authApi.login })
+}
+export function useRegister() {
+  return useMutation({ mutationFn: authApi.register })
 }

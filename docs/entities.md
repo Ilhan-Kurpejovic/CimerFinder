@@ -1,3 +1,15 @@
+# CimerFinder — connected frontend and backend
+
+The active API contract is [backend/docs/entities.md](../backend/docs/entities.md). Authentication, profiles and listings now use real HTTP requests and the SQL database; no mock profile or listing store is used by the UI. Frontend adapters map integer ownerId to userId (string for existing component compatibility), displayName to name and avatarUrl to avatar. Public listing authors never include email or password fields.
+
+Signed-in favorites use the SQL favorites table through /api/users/me/favorites; guest favorites remain in the browser. Existing account-local favorites are retained in browser storage but are not automatically imported. Private chat is available through /api/conversations. Real profile and listing photo uploads are implemented: one avatar and up to eight ordered listing photos, with the first used as the cover. Image bytes live in backend/data/uploads and SQL stores ownership, metadata and references. Existing external HTTP(S) URLs remain supported; empty images use a local placeholder. Old browser mock data is retained but not automatically imported or trusted as authentication.
+
+Listing status is stored in SQL: active, paused or matched. Owners change it in Moji oglasi; public search includes only active listings, while personal lists retain all statuses.
+
+## Historical mock implementation (superseded)
+
+The notes below describe the earlier mock version and are retained for migration context. They are not the active persistence or authentication contract.
+
 ﻿# Entities
 
 ## Listing
@@ -57,3 +69,11 @@ cimer-user stores the active profile identity. Demo login validates an email and
 cimer-saved stores an array of listing IDs, shared across header, cards, details and the favorites route using a local external-store hook.
 
 Contact messages are validated and acknowledged in the modal but never sent or stored. There is no messaging service, backend, payment flow or real account system.
+
+## Listing editor
+
+The /listings/:id/edit route loads existing data and checks the active owner before displaying the shared publishing/editor form. The update hook invalidates all listing queries after a successful mock update. Editable fields are kind, title, city, neighborhood, price, area, roommates, description, tags and imageUrl. The ID, creation date and ownership remain intact. Author information continues to come from the profile. A failed storage write preserves the previous listing. A room photo is retained when no new file is chosen; roommate photos continue to come from the profile.
+
+## Backend implementation status — phase one
+
+The sections above describe current frontend mock behavior. A real authentication/profile backend is now implemented in backend/. Its exact contract is backend/docs/entities.md: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, GET /api/users/me and PATCH /api/users/me. Server IDs are integers and the server uses displayName/avatarUrl, so frontend integration needs an adapter for the existing name/avatar fields. Listings and favorites remain mock-only and are not server entities yet. No automatic import of browser-local users, passwords or listings is performed.

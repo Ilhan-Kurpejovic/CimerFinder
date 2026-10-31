@@ -1,6 +1,10 @@
+import { ImagePicker } from '@/components/media/image-picker'
+import { useImageSelection } from '@/lib/use-image-selection'
+import { cities } from '@/lib/cities'
+import { apiMessage } from '@/lib/api-client'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { Camera, Check, Save, X } from 'lucide-react'
+import { ArrowUpRight, Camera, Check, FileText, LockKeyhole, MapPin, Save, UserRound } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -24,9 +28,7 @@ const schema = z.object({
 type Fields = z.infer<typeof schema>
 export function ProfileEditor({ user }: { user: User }) {
   const update = useUpdateProfile()
-  const [avatar, setAvatar] = useState(user.avatar)
-  const [imageError, setImageError] = useState('')
-  const [reading, setReading] = useState(false)
+  const photos = useImageSelection(user.avatar === defaultAvatar ? [] : [user.avatar], 'avatar', 1)
   const [saved, setSaved] = useState(false)
   const [params] = useSearchParams()
   const next = params.get('next') || ''
@@ -54,155 +56,159 @@ export function ProfileEditor({ user }: { user: User }) {
     )
   const cancel = () => {
     reset({ ...user, age: user.age ?? undefined })
-    setAvatar(user.avatar)
-    setImageError('')
+    photos.reset(user.avatar === defaultAvatar ? [] : [user.avatar])
     setSaved(false)
     update.reset()
   }
   return (
-    <div className="profile-layout">
-      <aside className="profile-preview">
-        <img className="profile-avatar" src={user.avatar} alt={`Profilna fotografija: ${user.name}`} />
-        <h2>{user.name}</h2>
-        <p>{user.occupation || 'Dopuni svoj profil'}</p>
-        <span>{user.city}</span>
-        <small>{user.email}</small>
-        {user.bio && <p className="profile-bio">{user.bio}</p>}
-        <div className="profile-note">
-          <Check size={18} />
-          <p>
-            Ime, godine, zanimanje i profilna slika automatski se prikazuju uz tvoje oglase. Fotografije stana
-            ostaju zasebne.
-          </p>
+    <div className="profile-layout profile-workspace">
+      <aside className="profile-sidebar">
+        <div className="profile-preview">
+          <div className="profile-cover">
+            <span>JAVNI IZGLED PROFILA</span>
+          </div>
+          <img className="profile-avatar" src={user.avatar} alt={`Profilna fotografija: ${user.name}`} />
+          <h2>{user.name}</h2>
+          <p>{user.occupation || 'Predstavi se budućim cimerima'}</p>
+          {user.city && (
+            <span className="profile-city">
+              <MapPin size={13} />
+              {user.city}
+            </span>
+          )}
+          <span className={'profile-readiness ' + (profileComplete(user) ? 'is-complete' : '')}>
+            <Check size={13} />
+            {profileComplete(user) ? 'Spreman za nove početke' : 'Dopuni profil za objavljivanje'}
+          </span>
+          {user.bio && <p className="profile-bio">{user.bio}</p>}
+          <div className="profile-note">
+            <UserRound size={17} />
+            <p>
+              Ime, godine, zanimanje i fotografija prikazuju se uz tvoje oglase. Promjene se primjenjuju kada
+              sačuvaš profil.
+            </p>
+          </div>
         </div>
+        <Link className="profile-listings-link" to="/my-listings">
+          <span>
+            <strong>Tvoje mjesto za oglase</strong>
+            <small>Pregledaj i uredi svoje objave</small>
+          </span>
+          <ArrowUpRight size={20} />
+        </Link>
       </aside>
       <form
-        className="post-form profile-form"
+        className="profile-form"
         noValidate
         onChange={() => setSaved(false)}
         onSubmit={handleSubmit(async (values) => {
           try {
-            const result = await update.mutateAsync({ ...values, avatar })
+            const result = await update.mutateAsync({ ...values, avatar: photos.values[0] || defaultAvatar })
             reset({ ...result, age: result.age ?? undefined })
+            photos.commit(result.avatar === defaultAvatar ? [] : [result.avatar])
             setSaved(true)
           } catch {
             /* Display a recoverable error below. */
           }
         })}
       >
-        <h2>Uredi profil</h2>
-        <fieldset disabled={update.isPending || reading}>
-          <div className="profile-photo-editor">
-            <img src={avatar} alt="Pregled profilne fotografije" />
-            <div>
-              <label className="btn btn-outline photo-upload">
-                <Camera size={17} />
-                Promijeni fotografiju
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    e.target.value = ''
-                    if (!file) return
-                    setSaved(false)
-                    if (
-                      file.size > 2 * 1024 * 1024 ||
-                      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-                    ) {
-                      setImageError('Izaberi JPG, PNG ili WebP do 2 MB.')
-                      return
-                    }
-                    setImageError('')
-                    setReading(true)
-                    const reader = new FileReader()
-                    reader.onload = () => {
-                      setAvatar(String(reader.result))
-                      setReading(false)
-                    }
-                    reader.onerror = () => {
-                      setImageError('Fotografija nije učitana. Pokušaj ponovo.')
-                      setReading(false)
-                    }
-                    reader.readAsDataURL(file)
-                  }}
-                />
+        <fieldset disabled={update.isPending || photos.busy}>
+          <section className="profile-editor-section">
+            <header className="profile-section-heading">
+              <span>
+                <Camera size={18} />
+              </span>
+              <div>
+                <h2>Lice iza profila</h2>
+                <p>Jedna fotografija čini prvi susret mnogo ličnijim.</p>
+              </div>
+            </header>
+            <ImagePicker selection={photos} disabled={update.isPending || photos.busy} />
+          </section>
+          <section className="profile-editor-section">
+            <header className="profile-section-heading">
+              <span>
+                <UserRound size={18} />
+              </span>
+              <div>
+                <h2>Za početak, nešto osnovno</h2>
+                <p>Podaci koji pomažu budućim cimerima da te upoznaju.</p>
+              </div>
+            </header>
+            <div className="form-grid">
+              <label>
+                Ime i prezime
+                <Input autoComplete="name" {...register('name')} aria-invalid={!!errors.name} />
+                {error('name')}
               </label>
-              <small>JPG, PNG ili WebP · do 2 MB</small>
-              {avatar !== defaultAvatar && (
-                <button
-                  className="text-link remove-photo"
-                  type="button"
-                  onClick={() => {
-                    setAvatar(defaultAvatar)
-                    setSaved(false)
-                  }}
-                >
-                  <X size={12} />
-                  Ukloni fotografiju
-                </button>
-              )}
+              <label>
+                Godine
+                <Input
+                  type="number"
+                  min="18"
+                  max="100"
+                  {...register('age', { valueAsNumber: true })}
+                  aria-invalid={!!errors.age}
+                />
+                {error('age')}
+              </label>
+              <label>
+                Zanimanje
+                <Input
+                  placeholder="Npr. Student ili dizajner"
+                  {...register('occupation')}
+                  aria-invalid={!!errors.occupation}
+                />
+                {error('occupation')}
+              </label>
+              <label>
+                Grad <span className="profile-optional">opciono</span>
+                <select {...register('city')}>
+                  <option value="">Izaberi grad</option>
+                  {user.city && !cities.includes(user.city) && <option value={user.city}>{user.city}</option>}
+                  {cities.map((city) => (
+                    <option key={city}>{city}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </section>
+          <section className="profile-editor-section">
+            <header className="profile-section-heading">
+              <span>
+                <FileText size={18} />
+              </span>
+              <div>
+                <h2>Tvoja priča</h2>
+                <p>Dom dijelimo lakše kada znamo ponešto jedni o drugima.</p>
+              </div>
+            </header>
+            <label>
+              Nešto o tebi <span className="profile-optional">opciono</span>
+              <Textarea
+                rows={5}
+                maxLength={1000}
+                placeholder="Šta voliš, kakve su tvoje navike i kakav zajednički dom želiš?"
+                {...register('bio')}
+                aria-invalid={!!errors.bio}
+              />
+              {error('bio')}
+            </label>
+            <small className="profile-field-hint">
+              Par riječi o svakodnevici, interesovanjima i tvom idealnom cimeru je dovoljno.
+            </small>
+          </section>
+          <div className="profile-account-email">
+            <LockKeyhole size={17} />
+            <div>
+              <strong>{user.email}</strong>
+              <span>Email tvog naloga. Vidljiv je samo tebi.</span>
             </div>
           </div>
-          {imageError && (
-            <p className="field-error" role="alert">
-              {imageError}
-            </p>
-          )}
-          <div className="form-grid">
-            <label>
-              Ime i prezime
-              <Input autoComplete="name" {...register('name')} aria-invalid={!!errors.name} />
-              {error('name')}
-            </label>
-            <label>
-              Godine
-              <Input
-                type="number"
-                min="18"
-                max="100"
-                {...register('age', { valueAsNumber: true })}
-                aria-invalid={!!errors.age}
-              />
-              {error('age')}
-            </label>
-            <label>
-              Zanimanje
-              <Input
-                placeholder="Npr. Student ili dizajner"
-                {...register('occupation')}
-                aria-invalid={!!errors.occupation}
-              />
-              {error('occupation')}
-            </label>
-            <label>
-              Grad
-              <select {...register('city')}>
-                <option value="">Izaberi grad (opciono)</option>
-                {['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'].map((city) => (
-                  <option key={city}>{city}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label>
-            Nešto o tebi
-            <Textarea
-              rows={4}
-              placeholder="Šta voliš, kakve su tvoje navike i kakav zajednički dom želiš?"
-              {...register('bio')}
-            />
-            {error('bio')}
-          </label>
-          <label>
-            Email adresa
-            <Input type="email" value={user.email} disabled />
-            <small className="muted">Email povezuje ovaj demo profil sa tvojim oglasima.</small>
-          </label>
         </fieldset>
         {update.isError && (
           <p className="field-error" role="alert">
-            Profil nije sačuvan. Provjeri prostor pregledača ili izaberi manju fotografiju i pokušaj ponovo.
+            {apiMessage(update.error)}
           </p>
         )}
         {saved && (
@@ -216,13 +222,13 @@ export function ProfileEditor({ user }: { user: User }) {
             className="btn btn-outline"
             type="button"
             onClick={cancel}
-            disabled={update.isPending || reading}
+            disabled={update.isPending || photos.busy}
           >
             Odustani od izmjena
           </button>
-          <Button className="btn btn-primary" type="submit" disabled={update.isPending || reading}>
+          <Button className="btn btn-primary" type="submit" disabled={update.isPending || photos.busy}>
             <Save size={17} />
-            {reading ? 'Učitavam fotografiju...' : update.isPending ? 'Čuvam...' : 'Sačuvaj profil'}
+            {update.isPending ? 'Čuvam...' : 'Sačuvaj profil'}
           </Button>
         </div>
         {returnPath && profileComplete(user) && (

@@ -1,10 +1,27 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { ArrowUpRight, Heart, House, Menu, Plus, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { MessagesNav } from './messages-nav'
 import { AccountMenu } from './account-menu'
 export function AppLayout() {
   const [open, setOpen] = useState(false)
   const { pathname, hash } = useLocation()
+  const client = useQueryClient()
+  const listingMatch = pathname.match(/^\/listings\/(\d+)(?:\/edit)?$/)
+  const listingId = listingMatch ? Number(listingMatch[1]) : null
+  const subscribe = useCallback((notify: () => void) => client.getQueryCache().subscribe(notify), [client])
+  // Observe the detail already loaded by the page, without another API request.
+  const listingKind = useSyncExternalStore(
+    subscribe,
+    () =>
+      listingId
+        ? client.getQueryData<{ kind: 'room' | 'roommate' }>(['listings', listingId])?.kind
+        : undefined,
+    () => undefined,
+  )
+  const homeSearchActive = pathname === '/listings' || listingKind === 'room'
+  const roommateSearchActive = pathname === '/roommates' || listingKind === 'roommate'
   useEffect(() => {
     setOpen(false)
     if (hash) requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView())
@@ -33,8 +50,20 @@ export function AppLayout() {
             <NavLink to="/" end>
               Početna
             </NavLink>
-            <NavLink to="/listings">Pronađi dom</NavLink>
-            <NavLink to="/roommates">Pronađi cimera</NavLink>
+            <Link
+              to="/listings"
+              className={homeSearchActive ? 'active' : undefined}
+              aria-current={homeSearchActive ? 'page' : undefined}
+            >
+              Pronađi dom
+            </Link>
+            <Link
+              to="/roommates"
+              className={roommateSearchActive ? 'active' : undefined}
+              aria-current={roommateSearchActive ? 'page' : undefined}
+            >
+              Pronađi cimera
+            </Link>
             <NavLink className="mobile-nav-link" to="/saved">
               Sačuvani oglasi
             </NavLink>
@@ -47,6 +76,7 @@ export function AppLayout() {
             <Link className="saved-nav" to="/saved" aria-label="Sačuvani oglasi">
               <Heart size={20} />
             </Link>
+            <MessagesNav />
             <AccountMenu />
             <Link className="btn btn-primary nav-post" to="/post">
               <Plus size={16} />
@@ -80,7 +110,7 @@ export function AppLayout() {
         </div>
         <div className="container footer-bottom">
           <span>© {new Date().getFullYear()} CimerFinder. Napravljeno za zajedničke početke.</span>
-          <span>Demo aplikacija · Podaci se čuvaju na tvom uređaju.</span>
+          <span>CimerFinder · Prostor za zajedničke početke.</span>
         </div>
       </footer>
     </div>
