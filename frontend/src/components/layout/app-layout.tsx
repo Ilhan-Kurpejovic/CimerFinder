@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { ArrowUpRight, Heart, House, Menu, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { ThemeToggle } from './theme-toggle'
 import { MessagesNav } from './messages-nav'
 import { AccountMenu } from './account-menu'
 export function AppLayout() {
@@ -73,6 +74,7 @@ export function AppLayout() {
             <Link to="/#kako-funkcionise">Kako funkcioniše</Link>
           </nav>
           <div className="header-actions">
+            <ThemeToggle />
             <Link className="saved-nav" to="/saved" aria-label="Sačuvani oglasi">
               <Heart size={20} />
             </Link>

@@ -135,7 +135,7 @@ export function HomeContent() {
               </label>
               <button className="btn btn-primary search-submit">
                 <Search size={19} />
-                Pronađi svoj dom <ArrowRight size={18} />
+                {kind === 'room' ? 'Pronađi sobu' : 'Pronađi cimera'} <ArrowRight size={18} />
               </button>
             </form>
           </div>

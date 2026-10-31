@@ -219,7 +219,7 @@ export function LoginForm() {
               <p>
                 {signingUp
                   ? 'Nakon registracije dopuni profil da bi mogao/la objaviti svoj prvi oglas.'
-                  : 'Izaberi Registracija da napraviš nalog. Raniji lokalni demo profili nijesu registrovani nalozi.'}
+                  : 'Napravi nalog, sačuvaj omiljene oglase i upoznaj buduće cimere.'}
               </p>
             </div>
             <Link className="text-link" to="/listings">

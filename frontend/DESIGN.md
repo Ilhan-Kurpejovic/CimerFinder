@@ -53,3 +53,11 @@ The chat header links the participant avatar and name to a dedicated public prof
 
 ## People seeking roommates and a home
 Roommate cards use a circular profile portrait, prominent name/age/occupation, search city, personal biography and a clearly labelled individual monthly rent budget. They do not use property cover photos, a repeated author row or property amenity tags. Detail pages introduce the person with their current profile photo and biography before their search preferences. Publishing this type reuses profile data and asks for search city, optional neighborhood, budget, number of desired roommates and expectations/lifestyle. Property area and photo uploads remain exclusive to room listings; the existing API area field keeps a compatibility value without being presented as a real property attribute.
+
+
+## Light and dark appearance
+A labelled sun/moon button in the global header switches appearance on every route, including mobile. Light remains the default; the chosen mode persists under cimer-theme in localStorage and synchronizes across tabs. A small script applies it before the initial page paint. Theme colors live in :root and .dark tokens; surface colors are distinct from literal white used over photos. The dark palette uses deep plum surfaces, lavender accents and dark text on light accent fills to preserve contrast. Photographs retain their original colors.
+
+
+## Dark surface contrast refinement
+The dark palette uses neutral blue-charcoal surfaces with purple reserved for accents. Page, hero, cards and raised panels have distinct brightness levels and clearer borders. Search controls and form inputs sit on darker inset surfaces with stronger outlines; raised dialogs and floating cards remain visibly separate. Text uses soft off-white and brighter muted tones. Theme-color matches the page background. All refinements are scoped to dark appearance.
